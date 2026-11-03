@@ -1,0 +1,204 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Homeroom Campus Housing</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="description" content="Take a five-question quiz and get matched with on-campus and off-campus housing near Hartwell University.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,100..900&family=Martian+Mono:wdth,wght@75..112.5,100..800&display=swap">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+
+<header class="topbar">
+  <div class="topbar-inner wrap">
+    <button type="button" class="brand" data-action="nav" data-view="quiz" aria-label="Homeroom, back to the quiz">
+      <svg class="brand-mark" viewBox="0 0 32 32" aria-hidden="true"><rect class="bm-bg" width="32" height="32" rx="9"/><path class="bm-house" d="M7.5 15.2 16 8.4l8.5 6.8V24a1.3 1.3 0 0 1-1.3 1.3H8.8A1.3 1.3 0 0 1 7.5 24z"/><rect class="bm-door" x="13.6" y="17.6" width="4.8" height="7.7" rx="1.2"/></svg>
+      <span class="brand-name">Homeroom</span>
+    </button>
+    <nav class="nav" aria-label="Main">
+      <button type="button" class="nav-btn" data-action="nav" data-view="quiz" data-nav-item data-icon="list" aria-label="Match quiz"><span class="nav-label">Quiz</span></button>
+      <button type="button" class="nav-btn" data-action="nav" data-view="results" data-nav-item data-icon="star" aria-label="My matches" id="navResults" hidden><span class="nav-label">Matches</span></button>
+      <button type="button" class="nav-btn" data-action="nav" data-view="browse" data-nav-item data-icon="map" aria-label="Browse listings"><span class="nav-label">Browse</span></button>
+      <button type="button" class="nav-btn" data-action="tours" data-icon="calendar" aria-label="My tours and messages" id="navTours" hidden><span class="nav-label">My tours</span><span class="nav-count" id="navToursCount">0</span></button>
+    </nav>
+  </div>
+</header>
+
+<main id="main">
+  <section id="view-quiz" class="view" aria-labelledby="quizHeading">
+    <div class="wrap quiz-layout">
+      <div class="quiz-main">
+        <p class="eyebrow">Hartwell University · Housing for 2027–28</p>
+        <h1 class="display" id="quizHeading">Find your place near campus.</h1>
+        <p class="lede">Answer five quick questions. We’ll match you with on-campus halls and off-campus homes that fit your budget, your commute and the lease you need.</p>
+        <form id="quizForm" class="quiz-card" novalidate>
+          <ol class="steps" id="quizSteps"></ol>
+          <div class="q-body" id="quizBody"></div>
+          <div class="q-foot">
+            <button type="button" class="btn btn--ghost q-back" id="quizBack" data-icon="arrowLeft">Back</button>
+            <span class="q-count" id="quizCount" aria-live="polite">Step 1 of 5</span>
+            <button type="submit" class="btn btn--primary" id="quizNext">Next</button>
+          </div>
+          <p class="q-live-mobile" id="quizLive" aria-live="polite"></p>
+        </form>
+        <p class="quiz-skip">Not ready for the quiz? <button type="button" class="linkbtn" data-action="nav" data-view="browse">Browse all 18 listings</button></p>
+      </div>
+
+      <aside class="quiz-aside" aria-label="Live preview of places that fit your answers">
+        <div class="live-card">
+          <div class="live-head">
+            <span class="live-num" id="liveNum">0</span>
+            <span class="live-sub" id="liveSub"></span>
+          </div>
+          <div class="live-map" id="liveMap"></div>
+          <div class="live-legend">
+            <span><i class="lg lg--on"></i>On campus</span>
+            <span><i class="lg lg--off"></i>Off campus</span>
+            <span><i class="lg lg--out"></i>Not a fit yet</span>
+            <span><i class="lg lg--quad"></i>Main Quad</span>
+          </div>
+          <div class="live-top">
+            <p class="eyebrow">Leading right now</p>
+            <ol id="liveTop"></ol>
+          </div>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <section id="view-results" class="view" aria-labelledby="resultsHeading" hidden>
+    <div class="wrap results-layout">
+      <div class="results-main">
+        <div class="results-head">
+          <div class="results-titles">
+            <p class="eyebrow" id="resultsEyebrow">Your matches</p>
+            <h2 class="h-xl" id="resultsHeading">Your top 4 places</h2>
+            <div class="prefs" id="prefsSummary"></div>
+          </div>
+          <div class="results-tools">
+            <div class="seg" role="group" aria-label="Show places" id="resultsCampus">
+              <button type="button" data-action="results-campus" data-val="all" aria-pressed="true">All</button>
+              <button type="button" data-action="results-campus" data-val="on" aria-pressed="false">On campus</button>
+              <button type="button" data-action="results-campus" data-val="off" aria-pressed="false">Off campus</button>
+            </div>
+            <button type="button" class="btn btn--secondary btn--sm" data-action="retake" data-icon="edit">Edit answers</button>
+          </div>
+        </div>
+        <div class="notice" id="sampleNotice" hidden>
+          <span>These matches use sample answers. Take the quiz to get your own.</span>
+          <button type="button" class="btn btn--primary btn--sm" data-action="retake">Take the quiz</button>
+        </div>
+        <ol class="rec-list" id="recList"></ol>
+        <div class="more">
+          <div class="more-map" id="moreMap"></div>
+          <div class="more-text">
+            <h3>See every place on the map</h3>
+            <p>Photos, prices and commute times for all <span id="moreCount">18</span> listings, on campus and off.</p>
+          </div>
+          <button type="button" class="btn btn--primary" data-action="nav" data-view="browse">Browse listings</button>
+        </div>
+      </div>
+      <div class="results-side" id="chatDock"></div>
+    </div>
+  </section>
+
+  <section id="view-browse" class="view" aria-labelledby="browseHeading" hidden>
+    <div class="wrap browse-bar">
+      <div>
+        <p class="eyebrow">All listings</p>
+        <h2 class="h-xl" id="browseHeading">Places near Hartwell</h2>
+        <p class="browse-count" id="browseCount"></p>
+      </div>
+      <div class="filters">
+        <div class="seg" role="group" aria-label="Campus" id="browseCampus">
+          <button type="button" data-action="browse-campus" data-val="all" aria-pressed="true">All</button>
+          <button type="button" data-action="browse-campus" data-val="on" aria-pressed="false">On campus</button>
+          <button type="button" data-action="browse-campus" data-val="off" aria-pressed="false">Off campus</button>
+        </div>
+        <label><span class="sr-only">Maximum rent</span>
+          <select class="select" id="fPrice">
+            <option value="any">Any rent</option>
+            <option value="700">Up to $700</option>
+            <option value="900">Up to $900</option>
+            <option value="1100">Up to $1,100</option>
+            <option value="1300">Up to $1,300</option>
+          </select>
+        </label>
+        <label><span class="sr-only">Roommates</span>
+          <select class="select" id="fRooms">
+            <option value="any">Any roommates</option>
+            <option value="solo">Just me</option>
+            <option value="one">1 roommate</option>
+            <option value="few">2–3 roommates</option>
+            <option value="many">4 or more</option>
+          </select>
+        </label>
+        <label><span class="sr-only">Sort by</span>
+          <select class="select" id="fSort">
+            <option value="match">Best match</option>
+            <option value="price">Lowest rent</option>
+            <option value="distance">Closest to the Quad</option>
+          </select>
+        </label>
+        <div class="seg seg--mode" role="group" aria-label="View as" id="browseMode">
+          <button type="button" data-action="browse-mode" data-val="list" aria-pressed="true">List</button>
+          <button type="button" data-action="browse-mode" data-val="map" aria-pressed="false">Map</button>
+        </div>
+      </div>
+    </div>
+    <div class="browse-layout" id="browseLayout">
+      <div class="browse-list" id="browseList"></div>
+      <div class="browse-map"><div class="map" id="browseMap" tabindex="0" aria-label="Map of listings. Drag to move, use the buttons to zoom."></div></div>
+    </div>
+  </section>
+</main>
+
+<footer class="footer">
+  <div class="wrap footer-inner">
+    <span><b>Homeroom</b> · On- and off-campus housing, matched to you</span>
+    <span>Demo listings for the fictional Hartwell University. Rent is per person, per month.</span>
+  </div>
+</footer>
+
+<aside id="chat" class="chat" aria-label="Housing assistant" data-mode="checking">
+  <div class="chat-head">
+    <span class="chat-avatar" data-icon="sparkle"></span>
+    <div class="chat-titles">
+      <h2 class="chat-title">Housing assistant</h2>
+      <p class="chat-status"><i class="status-dot"></i><span id="chatStatus">Connecting…</span></p>
+    </div>
+    <button type="button" class="iconbtn chat-close" data-action="chat-close" data-icon="x" aria-label="Close the assistant"></button>
+  </div>
+  <div class="chat-log" id="chatLog" aria-live="polite"></div>
+  <div class="chat-suggest" id="chatSuggest"></div>
+  <form class="chat-form" id="chatForm">
+    <label for="chatInput" class="sr-only">Ask about any listing</label>
+    <textarea id="chatInput" rows="1" placeholder="Ask about any listing…" autocomplete="off"></textarea>
+    <button type="submit" class="chat-send" id="chatSend" aria-label="Send"></button>
+  </form>
+  <p class="chat-foot" id="chatFoot">Answers can be wrong. Confirm details with the landlord.</p>
+</aside>
+<button type="button" class="chat-fab" id="chatFab" data-action="chat-open" data-icon="sparkle" hidden><span>Ask the assistant</span></button>
+
+<dialog id="dlgListing" class="dlg dlg--wide" aria-labelledby="dlgListingTitle">
+  <div class="dlg-shell">
+    <button type="button" class="iconbtn dlg-x" data-action="close" data-icon="x" aria-label="Close listing"></button>
+    <div class="dlg-body" id="dlgListingBody"></div>
+    <div class="dlg-foot" id="dlgListingFoot"></div>
+  </div>
+</dialog>
+<dialog id="dlgContact" class="dlg" aria-labelledby="dlgContactTitle"></dialog>
+<dialog id="dlgTour" class="dlg" aria-labelledby="dlgTourTitle"></dialog>
+<dialog id="dlgTours" class="dlg" aria-labelledby="dlgToursTitle"></dialog>
+
+<script src="data.js"></script>
+<script src="match.js"></script>
+<script src="art.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
