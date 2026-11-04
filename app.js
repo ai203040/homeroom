@@ -61,6 +61,7 @@
     mail: '<rect x="2.5" y="4.5" width="19" height="15" rx="2.5"/><path d="m3 7 9 6 9-6"/>',
     chat: '<path d="M21 15a2 2 0 0 1-2 2H8l-5 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>',
     star: '<path d="m12 2.5 2.9 6 6.6.9-4.8 4.6 1.2 6.5L12 17.4l-5.9 3.1 1.2-6.5L2.5 9.4l6.6-.9z"/>',
+    heart: '<path d="M12 20.3 4.3 12.6a4.6 4.6 0 0 1 0-6.5 4.6 4.6 0 0 1 6.5 0l1.2 1.2 1.2-1.2a4.6 4.6 0 0 1 6.5 0 4.6 4.6 0 0 1 0 6.5z"/>',
     check: '<path d="M20 6 9 17l-5-5"/>',
     x: '<path d="M18 6 6 18M6 6l12 12"/>',
     chevDown: '<path d="m6 9 6 6 6-6"/>',
@@ -128,6 +129,7 @@
     top: [],
     browse: { campus: 'all', price: 'any', rooms: 'any', sort: 'match', mode: 'list' },
     tours: store.get('tours', []),
+    saved: store.get('saved', []),
     messages: store.get('messages', []),
     me: store.get('me', { name: '', email: '', phone: '' }),
   };
@@ -145,6 +147,45 @@
   }
   function persistAnswers() { store.set('answers', state.answers); }
   function currentTop() { return state.top && state.top.length ? state.top : M.rank(L, answers()).slice(0, 4); }
+
+  // ---------- saved listings ----------
+  if (!Array.isArray(state.saved)) state.saved = [];
+  function isSaved(id) { return state.saved.indexOf(id) !== -1; }
+  function toggleSave(id) {
+    const i = state.saved.indexOf(id);
+    if (i === -1) state.saved.push(id); else state.saved.splice(i, 1);
+    store.set('saved', state.saved);
+    updateSavedNav();
+    // reflect the new state on any save button for this listing that is on screen
+    $$('[data-action="save"][data-id="' + id + '"]').forEach(syncSaveBtn);
+    if (state.view === 'saved') renderSaved();
+  }
+  function saveBtnHTML(l) {
+    const on = isSaved(l.id);
+    return `<button type="button" class="btn btn--secondary btn--sm save-btn${on ? ' is-on' : ''}" data-action="save" data-id="${l.id}" aria-pressed="${on}" aria-label="${on ? 'Remove ' + esc(l.name) + ' from saved' : 'Save ' + esc(l.name)}">${icon('heart')}<span class="save-label">${on ? 'Saved' : 'Save'}</span></button>`;
+  }
+  function syncSaveBtn(btn) {
+    const on = isSaved(btn.dataset.id);
+    btn.classList.toggle('is-on', on);
+    btn.setAttribute('aria-pressed', String(on));
+    const lab = btn.querySelector('.save-label');
+    if (lab) lab.textContent = on ? 'Saved' : 'Save';
+  }
+  function updateSavedNav() {
+    const n = state.saved.length;
+    const c = $('#navSavedCount');
+    if (c) { c.textContent = n; c.hidden = n === 0; }
+  }
+  function savedListings() { return state.saved.map((id) => L.find((l) => l.id === id)).filter(Boolean); }
+  function renderSaved() {
+    const ls = savedListings();
+    const a = answers();
+    const count = $('#savedCount');
+    if (count) count.textContent = ls.length ? `${ls.length} saved place${ls.length === 1 ? '' : 's'}` : '';
+    $('#savedList').innerHTML = ls.length
+      ? ls.map((l) => cardHTML(l, M.score(l, a))).join('')
+      : '<div class="empty"><p>You haven’t saved any places yet.</p><p>Tap <b>Save</b> on any listing to keep it here.</p><p><button type="button" class="linkbtn" data-action="nav" data-view="browse">Browse listings</button></p></div>';
+  }
 
   // ---------- small helpers ----------
   const COMMUTE_NAME = { walk: 'Walking', bike: 'Bike or scooter', transit: 'Bus', car: 'Car' };
@@ -208,7 +249,7 @@
       <p class="q-help">Pick as many as you like, or skip this step.</p>
       <div class="amen-pick">${QZ.amenities.map((o) => `<label class="chip-opt" for="q-amen-${o.value}"><input type="checkbox" id="q-amen-${o.value}" name="amenities" value="${o.value}">${icon(o.icon)}<span>${esc(o.label)}</span></label>`).join('')}</div>
     </fieldset>`;
-    html += radioStep(4, 'lease', 'How long do you need the place?', 'Most Hartwell leases start in August. Spring sublets start in January.', QZ.lease);
+    html += radioStep(4, 'lease', 'How long do you need the place?', 'Most Temple leases start in August. Spring sublets start in January.', QZ.lease);
     $('#quizBody').innerHTML = html;
     syncQuizInputs();
   }
@@ -349,7 +390,7 @@
     return `<g class="qmark" transform="translate(${q[0]} ${q[1]}) scale(${scale || 1})"><circle r="12"/><path d="M-3.5 6.5V-6.5h8l-2 3 2 3h-8"/></g>`;
   }
   function buildLive() {
-    $('#liveMap').innerHTML = `<svg viewBox="0 0 1200 800" role="img" aria-label="Map of Hartwell showing which places fit your answers so far" style="--road-labels:0;--ts:1.9;--routes:.55"><use href="#hr-map"/>${quadMark(1.9)}${L.map((l) => `<g class="dotg" data-id="${l.id}" transform="translate(${l.pos[0]} ${l.pos[1]})"><circle class="dot-ring" r="21"/><circle class="dot--${l.campus}" r="14"/></g>`).join('')}</svg>`;
+    $('#liveMap').innerHTML = `<svg viewBox="0 0 1200 800" role="img" aria-label="Map of Temple showing which places fit your answers so far" style="--road-labels:0;--ts:1.9;--routes:.55"><use href="#hr-map"/>${quadMark(1.9)}${L.map((l) => `<g class="dotg" data-id="${l.id}" transform="translate(${l.pos[0]} ${l.pos[1]})"><circle class="dot-ring" r="21"/><circle class="dot--${l.campus}" r="14"/></g>`).join('')}</svg>`;
   }
   function updateLive() {
     const keys = STEPS.map((s) => s.key).filter((k) => state.touched.has(k));
@@ -412,6 +453,7 @@
       <div class="rec-actions">
         <button type="button" class="btn btn--ghost btn--sm rec-toggle" data-action="expand" data-id="${l.id}" aria-expanded="false" aria-controls="recd-${l.id}"><span>View full listing</span>${icon('chevDown')}</button>
         <div class="rec-cta">
+          ${saveBtnHTML(l)}
           <button type="button" class="btn btn--secondary btn--sm" data-action="contact" data-id="${l.id}">${icon('chat')}Contact landlord</button>
           <button type="button" class="btn btn--primary btn--sm" data-action="tour" data-id="${l.id}">${icon('calendar')}Book a tour</button>
         </div>
@@ -506,7 +548,6 @@
         <div class="ll-top"><span class="avatar" aria-hidden="true">${initials(ll.name)}</span><div class="ll-id"><b>${esc(ll.name)}</b><span>${esc(ll.role)}</span><span>${esc(ll.company)}</span></div></div>
         <ul class="ll-meta">
           ${ll.verified ? `<li class="is-verified">${icon('shieldCheck')}${verified}</li>` : ''}
-          <li>${icon('star')}${ll.rating.toFixed(1)} landlord rating from students</li>
           <li>${icon('clock')}${esc(ll.response)}</li>
           <li>${icon('calendar')}${esc(ll.hours)}</li>
           <li>${icon('home')}On Homeroom since ${ll.since}</li>
@@ -516,6 +557,7 @@
           <div class="ll-line">${icon('mail')}<span id="lle${k}">${esc(ll.email)}</span><button type="button" class="copy" data-action="copy" data-copy="${esc(ll.email)}" data-target="lle${k}" aria-label="Copy email address">${icon('copy')}Copy</button></div>
         </div>
         <div class="ll-actions">
+          ${saveBtnHTML(l)}
           <button type="button" class="btn btn--secondary btn--sm" data-action="contact" data-id="${l.id}">${icon('chat')}Message</button>
           <button type="button" class="btn btn--primary btn--sm" data-action="tour" data-id="${l.id}">${icon('calendar')}Book a tour</button>
         </div>
@@ -603,12 +645,6 @@
             ${commuteHTML(l)}
           </section>
           ${landlordHTML(l)}
-          <section class="dsec"><h4 class="dsec-title">What residents say</h4>
-            <div class="review">
-              <div class="review-score"><b>${l.rating.toFixed(1)}</b>${stars(l.rating)}<span class="review-count">${l.reviews} reviews</span></div>
-              <blockquote>“${esc(l.review.text)}”<cite>${esc(l.review.by)}</cite></blockquote>
-            </div>
-          </section>
         </div>
       </div>
     </div>`;
@@ -618,6 +654,7 @@
     return `<div class="detail-foot">
       <button type="button" class="btn btn--ghost btn--sm" data-action="collapse" data-id="${l.id}">${icon('chevUp')}Hide full listing</button>
       <div class="rec-cta">
+        ${saveBtnHTML(l)}
         <button type="button" class="btn btn--secondary btn--sm" data-action="contact" data-id="${l.id}">${icon('chat')}Contact landlord</button>
         <button type="button" class="btn btn--primary btn--sm" data-action="tour" data-id="${l.id}">${icon('calendar')}Book a tour</button>
       </div>
@@ -684,6 +721,7 @@
         <div class="card-facts"><span>${icon('bed')}${esc(l.layout.summary)}</span><span>${icon('users')}${roommateText(l)}</span></div>
         <span class="sign">${icon(cl.icon)}${esc(cl.short)}</span>
         <div class="card-actions">
+          ${saveBtnHTML(l)}
           <button type="button" class="btn btn--secondary btn--sm" data-action="contact" data-id="${l.id}">Contact</button>
           <button type="button" class="btn btn--primary btn--sm" data-action="tour" data-id="${l.id}">Book a tour</button>
         </div>
@@ -1007,7 +1045,7 @@
     const me = state.me;
     const a = answers();
     const leasePhrase = { semester: 'a one-semester lease', academic: 'the 2027–28 academic year', year: 'a 12-month lease', flex: 'a month-to-month lease' }[a.lease];
-    const msg = `Hi ${firstName(ll.name)}, I’m a Hartwell student interested in ${l.name}${state.quizDone ? ` for ${leasePhrase}` : ''}. Is it still available? I’d also like to know what the monthly costs include. Thanks!`;
+    const msg = `Hi ${firstName(ll.name)}, I’m a Temple student interested in ${l.name}${state.quizDone ? ` for ${leasePhrase}` : ''}. Is it still available? I’d also like to know what the monthly costs include. Thanks!`;
     const d = $('#dlgContact');
     d.innerHTML = `<form class="dlg-form" id="contactForm" novalidate>
       <header class="dlg-head"><div><p class="eyebrow">Contact landlord</p><h2 class="dlg-title" id="dlgContactTitle">Message ${esc(ll.name)}</h2><p class="dlg-sub">About ${esc(l.name)}</p></div><button type="button" class="iconbtn" data-action="close" aria-label="Close">${icon('x')}</button></header>
@@ -1368,7 +1406,7 @@
   function welcomeText() {
     return state.quizDone
       ? `Hi! I know your quiz answers and all ${L.length} listings. Ask me to compare places, explain a lease term, or find something specific, like parking or a pet-friendly place.`
-      : `Hi! I know all ${L.length} listings near Hartwell. Ask me to compare places, explain a lease term, or find something specific, like parking or a pet-friendly place.`;
+      : `Hi! I know all ${L.length} listings near Temple. Ask me to compare places, explain a lease term, or find something specific, like parking or a pet-friendly place.`;
   }
 
   function renderSuggestions() {
@@ -1407,14 +1445,14 @@
     const leases = Object.keys(l.leases).map((k) => `${M.LEASE_NAME[k]} (${l.leases[k]})`).join('; ');
     const bus = l.transit ? `Route ${l.transit.route} bus from ${l.transit.stop}, about ${l.transit.total} min door to door` : l.campus === 'on' ? 'on campus, no bus needed' : 'no bus line that saves time';
     const other = (l.costs.other || []).map((o) => `, ${o.label} ${money(o.amount)}`).join('');
-    return `- ${l.name} | ${l.campus === 'on' ? 'on campus' : 'off campus'}, ${l.kind}, ${l.hood}, ${l.address} | rent ${money(l.rent)}/mo (${l.billing}); utilities ${l.utilities.included ? 'included' : 'about ' + money(l.utilities.estimate) + '/mo extra'} (${l.utilities.note.replace(/\.$/, '')}); effective cost ${money(M.effective(l))}/mo | ${l.layout.summary}: ${l.layout.space}, ${l.layout.bath}, ${l.layout.sqft} sq ft, ${roommateText(l).toLowerCase()}, ${l.furnished ? 'furnished' : 'unfurnished'} | ${l.leaseType}; options: ${leases}; move-in from ${l.available} | to the Main Quad: walk ${c.walk} min, bike ${c.bike} min, drive ${c.drive} min, ${bus} | parking: ${l.parking.note} | amenities: ${am} | pets: ${l.rules.pets} | smoking: ${l.rules.smoking} | guests: ${l.rules.guests} | quiet hours: ${l.rules.quiet} | subletting: ${l.rules.sublet} | move-in costs: ${l.costs.depositLabel} ${money(l.costs.deposit)}, application fee ${l.costs.appFee ? money(l.costs.appFee) : 'none'}${other} | contact: ${l.landlord.name}, ${l.landlord.role}, ${l.landlord.company}, ${lowerFirst(l.landlord.response)}, hours ${l.landlord.hours} | rating ${l.rating} from ${l.reviews} reviews; a resident says "${l.review.text}" | ${l.description}`;
+    return `- ${l.name} | ${l.campus === 'on' ? 'on campus' : 'off campus'}, ${l.kind}, ${l.hood}, ${l.address} | rent ${money(l.rent)}/mo (${l.billing}); utilities ${l.utilities.included ? 'included' : 'about ' + money(l.utilities.estimate) + '/mo extra'} (${l.utilities.note.replace(/\.$/, '')}); effective cost ${money(M.effective(l))}/mo | ${l.layout.summary}: ${l.layout.space}, ${l.layout.bath}, ${l.layout.sqft} sq ft, ${roommateText(l).toLowerCase()}, ${l.furnished ? 'furnished' : 'unfurnished'} | ${l.leaseType}; options: ${leases}; move-in from ${l.available} | to the Main Quad: walk ${c.walk} min, bike ${c.bike} min, drive ${c.drive} min, ${bus} | parking: ${l.parking.note} | amenities: ${am} | pets: ${l.rules.pets} | smoking: ${l.rules.smoking} | guests: ${l.rules.guests} | quiet hours: ${l.rules.quiet} | subletting: ${l.rules.sublet} | move-in costs: ${l.costs.depositLabel} ${money(l.costs.deposit)}, application fee ${l.costs.appFee ? money(l.costs.appFee) : 'none'}${other} | contact: ${l.landlord.name}, ${l.landlord.role}, ${l.landlord.company}, ${lowerFirst(l.landlord.response)}, hours ${l.landlord.hours} | ${l.description}`;
   }
 
   function aiContext() {
     const a = answers();
     const top = currentTop();
     const lines = [
-      'You are the housing assistant on Homeroom, a website where Hartwell University students compare on-campus and off-campus housing. Hartwell, its town and every listing below are demo data for a prototype, but answer as if they were real listings on the site.',
+      'You are the housing assistant on Homeroom, a website where Temple University students compare on-campus and off-campus housing. Temple, its town and every listing below are demo data for a prototype, but answer as if they were real listings on the site.',
       '',
       'How to answer:',
       '- Use only the listing data below for facts about listings. If a detail is missing, say so and suggest the Contact landlord button.',
@@ -1656,7 +1694,7 @@
 
     if (/bus|transit|route/.test(t)) {
       const ls = pool.filter((l) => l.transit).sort((x, y) => x.transit.total - y.transit.total);
-      return 'Places on a Hartwell Transit line:\n' + bullets(ls, (l) => `Route ${l.transit.route} from ${l.transit.stop}, about ${l.transit.total} min door to door`) + '\n\nOn-campus halls don’t need a bus at all.';
+      return 'Places on a Temple Transit line:\n' + bullets(ls, (l) => `Route ${l.transit.route} from ${l.transit.stop}, about ${l.transit.total} min door to door`) + '\n\nOn-campus halls don’t need a bus at all.';
     }
 
     for (const topic of AMEN_TOPICS) {
@@ -1714,7 +1752,7 @@
   }
 
   // ---------- views & routing ----------
-  const VIEWS = ['quiz', 'results', 'browse'];
+  const VIEWS = ['quiz', 'results', 'browse', 'saved'];
   function show(view, force) {
     if (view === state.view && !force) return;
     const first = state.view === null;
@@ -1726,6 +1764,7 @@
     if (view === 'quiz') { showStep(state.step); updateLive(); }
     if (view === 'results') renderResults();
     if (view === 'browse') renderBrowse();
+    if (view === 'saved') renderSaved();
     placeChat();
     if (!first) window.scrollTo(0, 0);
   }
@@ -1753,6 +1792,7 @@
     const id = t.dataset.id;
     switch (t.dataset.action) {
       case 'nav': go(t.dataset.view); break;
+      case 'save': toggleSave(id); break;
       case 'retake': state.step = 0; go('quiz'); showStep(0); break;
       case 'expand': toggleExpand(id); break;
       case 'collapse': toggleExpand(id, true); break;
@@ -1798,6 +1838,7 @@
     bindBrowse();
     buildChat();
     updateToursNav();
+    updateSavedNav();
     document.addEventListener('click', onClick);
     document.addEventListener('keydown', (e) => {
       if (e.key === 'Escape' && $('#chat').classList.contains('is-open') && !document.querySelector('dialog[open]')) closeChat();

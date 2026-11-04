@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Homeroom Campus Housing</title>
 <meta name="claude:viewport-fit-sides" content="cover">
-<meta name="description" content="Take a five-question quiz and get matched with on-campus and off-campus housing near Hartwell University.">
+<meta name="description" content="Take a five-question quiz and get matched with on-campus and off-campus housing near Temple University.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,100..900&family=Martian+Mono:wdth,wght@75..112.5,100..800&display=swap">
@@ -24,6 +24,7 @@
       <button type="button" class="nav-btn" data-action="nav" data-view="quiz" data-nav-item data-icon="list" aria-label="Match quiz"><span class="nav-label">Quiz</span></button>
       <button type="button" class="nav-btn" data-action="nav" data-view="results" data-nav-item data-icon="star" aria-label="My matches" id="navResults" hidden><span class="nav-label">Matches</span></button>
       <button type="button" class="nav-btn" data-action="nav" data-view="browse" data-nav-item data-icon="map" aria-label="Browse listings"><span class="nav-label">Browse</span></button>
+      <button type="button" class="nav-btn" data-action="nav" data-view="saved" data-nav-item data-icon="heart" aria-label="Saved listings" id="navSaved"><span class="nav-label">Saved</span><span class="nav-count" id="navSavedCount" hidden>0</span></button>
       <button type="button" class="nav-btn" data-action="tours" data-icon="calendar" aria-label="My tours and messages" id="navTours" hidden><span class="nav-label">My tours</span><span class="nav-count" id="navToursCount">0</span></button>
     </nav>
   </div>
@@ -33,7 +34,7 @@
   <section id="view-quiz" class="view" aria-labelledby="quizHeading">
     <div class="wrap quiz-layout">
       <div class="quiz-main">
-        <p class="eyebrow">Hartwell University · Housing for 2027–28</p>
+        <p class="eyebrow">Temple University · Housing for 2027–28</p>
         <h1 class="display" id="quizHeading">Find your place near campus.</h1>
         <p class="lede">Answer five quick questions. We’ll match you with on-campus halls and off-campus homes that fit your budget, your commute and the lease you need.</p>
         <form id="quizForm" class="quiz-card" novalidate>
@@ -111,7 +112,7 @@
     <div class="wrap browse-bar">
       <div>
         <p class="eyebrow">All listings</p>
-        <h2 class="h-xl" id="browseHeading">Places near Hartwell</h2>
+        <h2 class="h-xl" id="browseHeading">Places near Temple</h2>
         <p class="browse-count" id="browseCount"></p>
       </div>
       <div class="filters">
@@ -156,12 +157,25 @@
       <div class="browse-map"><div class="map" id="browseMap" tabindex="0" aria-label="Map of listings. Drag to move, use the buttons to zoom."></div></div>
     </div>
   </section>
+
+  <section id="view-saved" class="view" aria-labelledby="savedHeading" hidden>
+    <div class="wrap browse-bar">
+      <div>
+        <p class="eyebrow">Your list</p>
+        <h2 class="h-xl" id="savedHeading">Saved listings</h2>
+        <p class="browse-count" id="savedCount"></p>
+      </div>
+    </div>
+    <div class="wrap">
+      <div class="browse-list" id="savedList"></div>
+    </div>
+  </section>
 </main>
 
 <footer class="footer">
   <div class="wrap footer-inner">
     <span><b>Homeroom</b> · On- and off-campus housing, matched to you</span>
-    <span>Demo listings for the fictional Hartwell University. Rent is per person, per month.</span>
+    <span>Demo listings for the fictional Temple University. Rent is per person, per month.</span>
   </div>
 </footer>
 

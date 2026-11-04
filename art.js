@@ -738,7 +738,7 @@
       o += `<text class="m-txt m-rlabel${r.major ? ' is-major' : ''}" x="${x}" y="${y}" dy="0.34em" text-anchor="middle"${ang ? ` transform="rotate(${ang} ${x} ${y})"` : ''}>${esc(r.name)}</text>`;
     }));
     M.hoods.forEach((h) => { o += `<text class="m-txt m-hood" x="${h.at[0]}" y="${h.at[1]}" text-anchor="middle">${esc(h.name.toUpperCase())}</text>`; });
-    o += `<text class="m-txt m-clabel" x="${M.campusLabel[0]}" y="${M.campusLabel[1]}" text-anchor="middle">HARTWELL UNIVERSITY</text>`;
+    o += `<text class="m-txt m-clabel" x="${M.campusLabel[0]}" y="${M.campusLabel[1]}" text-anchor="middle">TEMPLE UNIVERSITY</text>`;
     o += `<text class="m-txt m-qlabel" x="${q[0] + q[2] / 2}" y="${q[1] + q[3] - 9}" text-anchor="middle">Main Quad</text>`;
     return o;
   }

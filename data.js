@@ -1,6 +1,6 @@
 /*
   Homeroom demo data.
-  Hartwell University, the town and every listing below are fictional.
+  Temple University, the town and every listing below are fictional.
   Swap in real listings by editing this file. Prices are per person, per month.
 
   Map coordinates (pos) are in map units on a 1200 x 800 grid (about 0.0018 miles per unit).
@@ -9,9 +9,9 @@
 */
 window.HOMEROOM = {
   campus: {
-    name: 'Hartwell University',
-    short: 'Hartwell',
-    town: 'Hartwell',
+    name: 'Temple University',
+    short: 'Temple',
+    town: 'Temple',
     quad: [610, 385],
     year: '2027–28',
   },
@@ -27,7 +27,7 @@ window.HOMEROOM = {
     commute: [
       { value: 'walk', label: 'Walk', hint: 'I want to be close to class', icon: 'walk' },
       { value: 'bike', label: 'Bike or scooter', hint: 'Up to about 15 minutes', icon: 'bike' },
-      { value: 'transit', label: 'Bus', hint: 'Near a Hartwell Transit line', icon: 'bus' },
+      { value: 'transit', label: 'Bus', hint: 'Near a Temple Transit line', icon: 'bus' },
       { value: 'car', label: 'Car', hint: 'I need a place to park', icon: 'car' },
     ],
     amenities: [
@@ -73,7 +73,7 @@ window.HOMEROOM = {
       campus: 'on',
       kind: 'Residence hall',
       hood: 'North Campus',
-      address: '12 Hartwell Way',
+      address: '12 Temple Way',
       pos: [505, 290],
       rent: 900,
       billing: 'Billed $4,050 per semester',
@@ -101,7 +101,7 @@ window.HOMEROOM = {
       rating: 4.3,
       reviews: 112,
       review: { text: 'Loud on Friday nights, but you meet everyone. The dining hall is basically next door.', by: 'First-year, 2025–26' },
-      landlord: { name: 'Dana Whitaker', role: 'Area coordinator, North Campus', company: 'Hartwell Residential Life', phone: '(812) 555-0110', email: 'reslife@hartwell.edu', response: 'Replies within 1 business day', rating: 4.5, since: 2018, verified: true, hours: 'Mon–Fri, 9 AM – 5 PM', kind: 'university' },
+      landlord: { name: 'Dana Whitaker', role: 'Area coordinator, North Campus', company: 'Temple Residential Life', phone: '(812) 555-0110', email: 'reslife@temple.edu', response: 'Replies within 1 business day', rating: 4.5, since: 2018, verified: true, hours: 'Mon–Fri, 9 AM – 5 PM', kind: 'university' },
       art: { style: 'hall', wall: '#B5634B', trim: '#EFE5D6', roof: '#4F3A33', accent: '#2C6A4F', sky: 0, room: '#E9E4DA', floor: '#C79C6E', textile: '#5A7D9A', textile2: '#C0704E', beds: 2 },
     },
     {
@@ -111,7 +111,7 @@ window.HOMEROOM = {
       campus: 'on',
       kind: 'Residence hall',
       hood: 'North Campus',
-      address: '40 Hartwell Way',
+      address: '40 Temple Way',
       pos: [720, 290],
       rent: 730,
       billing: 'Billed $3,285 per semester',
@@ -139,7 +139,7 @@ window.HOMEROOM = {
       rating: 4.0,
       reviews: 87,
       review: { text: 'Tight with three people, but it’s the cheapest way to live on campus and the RAs are great.', by: 'Sophomore, 2025–26' },
-      landlord: { name: 'Marcus Bell', role: 'Hall director', company: 'Hartwell Residential Life', phone: '(812) 555-0111', email: 'reslife@hartwell.edu', response: 'Replies within 1 business day', rating: 4.4, since: 2018, verified: true, hours: 'Mon–Fri, 9 AM – 5 PM', kind: 'university' },
+      landlord: { name: 'Marcus Bell', role: 'Hall director', company: 'Temple Residential Life', phone: '(812) 555-0111', email: 'reslife@temple.edu', response: 'Replies within 1 business day', rating: 4.4, since: 2018, verified: true, hours: 'Mon–Fri, 9 AM – 5 PM', kind: 'university' },
       art: { style: 'hall', wall: '#C2A07C', trim: '#F3EBDD', roof: '#5D5248', accent: '#2C6A4F', sky: 3, room: '#E3E6E0', floor: '#B8A58C', textile: '#C0704E', textile2: '#7C8F5A', beds: 3 },
     },
     {
@@ -177,7 +177,7 @@ window.HOMEROOM = {
       rating: 4.5,
       reviews: 64,
       review: { text: 'Sharing a bathroom with just one person is a game changer, and the AC actually works.', by: 'Sophomore, 2025–26' },
-      landlord: { name: 'Yuki Tanaka', role: 'Area coordinator, South Campus', company: 'Hartwell Residential Life', phone: '(812) 555-0112', email: 'reslife@hartwell.edu', response: 'Replies within 1 business day', rating: 4.6, since: 2019, verified: true, hours: 'Mon–Fri, 9 AM – 5 PM', kind: 'university' },
+      landlord: { name: 'Yuki Tanaka', role: 'Area coordinator, South Campus', company: 'Temple Residential Life', phone: '(812) 555-0112', email: 'reslife@temple.edu', response: 'Replies within 1 business day', rating: 4.6, since: 2019, verified: true, hours: 'Mon–Fri, 9 AM – 5 PM', kind: 'university' },
       art: { style: 'suites', wall: '#D9D4C7', trim: '#FFFFFF', roof: '#3F4A4F', accent: '#4E7D96', sky: 0, room: '#DDE5E1', floor: '#C9A67E', textile: '#4E7D96', textile2: '#D1A13F', beds: 2 },
     },
     {
@@ -215,7 +215,7 @@ window.HOMEROOM = {
       rating: 4.7,
       reviews: 41,
       review: { text: 'Quiet, creative floor. The basement studio is open all night.', by: 'Junior, 2025–26' },
-      landlord: { name: 'Leah Brennan', role: 'Program coordinator, Arts & Ideas', company: 'Hartwell Residential Life', phone: '(812) 555-0113', email: 'artsandideas@hartwell.edu', response: 'Replies within 1 business day', rating: 4.8, since: 2020, verified: true, hours: 'Mon–Fri, 10 AM – 4 PM', kind: 'university' },
+      landlord: { name: 'Leah Brennan', role: 'Program coordinator, Arts & Ideas', company: 'Temple Residential Life', phone: '(812) 555-0113', email: 'artsandideas@temple.edu', response: 'Replies within 1 business day', rating: 4.8, since: 2020, verified: true, hours: 'Mon–Fri, 10 AM – 4 PM', kind: 'university' },
       art: { style: 'studio', wall: '#9E5D47', trim: '#F1E8DA', roof: '#4A3832', accent: '#2C6A4F', sky: 1, room: '#E6E1EA', floor: '#C49A6C', textile: '#8A6C9E', textile2: '#D1A13F', beds: 1 },
     },
     {
@@ -253,7 +253,7 @@ window.HOMEROOM = {
       rating: 4.4,
       reviews: 58,
       review: { text: 'Full kitchen and in-unit laundry, and you can still roll out of bed to class.', by: 'Junior, 2025–26' },
-      landlord: { name: 'Carlos Mendez', role: 'Leasing coordinator', company: 'Hartwell University Apartments', phone: '(812) 555-0114', email: 'apartments@hartwell.edu', response: 'Replies within 1 business day', rating: 4.3, since: 2017, verified: true, hours: 'Mon–Fri, 9 AM – 5 PM', kind: 'university' },
+      landlord: { name: 'Carlos Mendez', role: 'Leasing coordinator', company: 'Temple University Apartments', phone: '(812) 555-0114', email: 'apartments@temple.edu', response: 'Replies within 1 business day', rating: 4.3, since: 2017, verified: true, hours: 'Mon–Fri, 9 AM – 5 PM', kind: 'university' },
       art: { style: 'garden', wall: '#CBB9A0', trim: '#F6F1E8', roof: '#55534E', accent: '#2C6A4F', sky: 1, room: '#ECE7DF', floor: '#D8C3A5', textile: '#7C8F5A', textile2: '#C0704E', beds: 1 },
     },
     {
@@ -291,7 +291,7 @@ window.HOMEROOM = {
       rating: 4.6,
       reviews: 39,
       review: { text: 'Feels like a real apartment. My cat has claimed the window seat.', by: 'Graduate student, 2025–26' },
-      landlord: { name: 'Hannah Lee', role: 'Leasing coordinator', company: 'Hartwell University Apartments', phone: '(812) 555-0115', email: 'apartments@hartwell.edu', response: 'Replies within 1 business day', rating: 4.5, since: 2017, verified: true, hours: 'Mon–Fri, 9 AM – 5 PM', kind: 'university' },
+      landlord: { name: 'Hannah Lee', role: 'Leasing coordinator', company: 'Temple University Apartments', phone: '(812) 555-0115', email: 'apartments@temple.edu', response: 'Replies within 1 business day', rating: 4.5, since: 2017, verified: true, hours: 'Mon–Fri, 9 AM – 5 PM', kind: 'university' },
       art: { style: 'suites', wall: '#9FB1A4', trim: '#F4F1EA', roof: '#3E4A44', accent: '#B98A5E', sky: 2, room: '#E8E1D6', floor: '#B98B5E', textile: '#D1A13F', textile2: '#5A7D9A', beds: 1 },
     },
     {
@@ -330,7 +330,7 @@ window.HOMEROOM = {
       reviews: 73,
       review: { text: 'Huge windows and exposed brick. The 7 bus is right outside when it rains.', by: 'Senior, lived here 2024–26' },
       landlord: { name: 'Maria Chen', role: 'Leasing manager', company: 'Brickyard Property Group', phone: '(812) 555-0140', email: 'leasing@brickyardpg.com', response: 'Usually replies within 2 hours', rating: 4.7, since: 2016, verified: true, hours: 'Mon–Sat, 10 AM – 6 PM', kind: 'company' },
-      art: { style: 'loft', wall: '#A4553F', trim: '#2F3336', roof: '#3A3532', accent: '#C9A15A', sky: 1, room: '#E8E1D6', floor: '#9C7350', textile: '#C0704E', textile2: '#5A7D9A', beds: 1, sign: 'HARTWELL MILL CO.' },
+      art: { style: 'loft', wall: '#A4553F', trim: '#2F3336', roof: '#3A3532', accent: '#C9A15A', sky: 1, room: '#E8E1D6', floor: '#9C7350', textile: '#C0704E', textile2: '#5A7D9A', beds: 1, sign: 'TEMPLE MILL CO.' },
     },
     {
       id: 'elm-row-house',
@@ -747,7 +747,7 @@ window.HOMEROOM = {
       rating: 4.5,
       reviews: 9,
       review: { text: 'Ana is the best roommate. Quiet on weeknights, fun on weekends.', by: 'Priya R., current tenant' },
-      landlord: { name: 'Priya Raman', role: 'Current tenant (subletting)', company: 'Approved by Linden Terrace Management', phone: '(812) 555-0151', email: 'priya.raman@hartwell.edu', response: 'Usually replies within 3 hours', rating: 4.9, since: 2025, verified: true, hours: 'Evenings', kind: 'sublet' },
+      landlord: { name: 'Priya Raman', role: 'Current tenant (subletting)', company: 'Approved by Linden Terrace Management', phone: '(812) 555-0151', email: 'priya.raman@temple.edu', response: 'Usually replies within 3 hours', rating: 4.9, since: 2025, verified: true, hours: 'Evenings', kind: 'sublet' },
       art: { style: 'townhouse', walls: ['#A9594A', '#B9694F', '#9E5D47'], wall: '#A9594A', trim: '#FFFFFF', roof: '#3F3A38', accent: '#2F5D50', sky: 0, room: '#ECE7DF', floor: '#C79C6E', textile: '#5A7D9A', textile2: '#D1A13F', beds: 1 },
     },
   ],
@@ -792,7 +792,7 @@ window.HOMEROOM = {
       {
         id: '2', name: 'Campus Loop',
         pts: [[185, 235], [855, 235], [855, 555], [185, 555], [185, 235]],
-        stops: [[185, 235, 'Fairview & College'], [360, 235, 'Elm & College'], [610, 235, 'Hartwell Gate'], [855, 235, 'Pike & College'], [855, 330, 'Pike & Birch'], [855, 555, 'Pike & Main'], [610, 555, 'Old Town'], [360, 555, 'Elm & Main'], [185, 555, 'Fairview & Main'], [185, 400, 'Fairview & Ash']],
+        stops: [[185, 235, 'Fairview & College'], [360, 235, 'Elm & College'], [610, 235, 'Temple Gate'], [855, 235, 'Pike & College'], [855, 330, 'Pike & Birch'], [855, 555, 'Pike & Main'], [610, 555, 'Old Town'], [360, 555, 'Elm & Main'], [185, 555, 'Fairview & Main'], [185, 400, 'Fairview & Ash']],
       },
       {
         id: '7', name: 'River Line',

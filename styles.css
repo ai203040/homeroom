@@ -1,37 +1,37 @@
 /* Homeroom: campus-wayfinding visual system */
 :root {
   /* Layout: a two-pane wayfinding app. Content sits on the left; the live campus map or the assistant docks on the right. Sign-style tags carry commute and lease facts. */
-  --bg: #F2F4F0;
+  --bg: #F4F4F5;
   --surface: #FFFFFF;
-  --surface-2: #EBEFE8;
-  --surface-3: #DEE4DB;
-  --ink: #15211B;
-  --ink-2: #44534A;
-  --ink-3: #65746B;
-  --line: #DBE1D8;
-  --line-2: #C4CDC2;
-  --quad: #1D5A43;
-  --quad-hover: #164A36;
+  --surface-2: #ECECEE;
+  --surface-3: #E0E0E3;
+  --ink: #1A1A1D;
+  --ink-2: #4A4A4F;
+  --ink-3: #6E6E74;
+  --line: #E2E2E5;
+  --line-2: #CBCBD0;
+  --quad: #9E1B34;
+  --quad-hover: #851629;
   --quad-ink: #FFFFFF;
-  --quad-soft: #DDEBE2;
-  --quad-text: #1A5A42;
-  --signal: #FFC93E;
-  --signal-ink: #231B00;
+  --quad-soft: #F5DEE3;
+  --quad-text: #9E1B34;
+  --signal: #9E1B34;
+  --signal-ink: #FFFFFF;
   --good: #1F7A4C;
   --warn: #8F5600;
   --bad: #B3261E;
   --route2: #2E6AD6;
   --route7: #D45E25;
-  --map-land: #E7EBE3;
-  --map-block: #D9DED4;
-  --map-campus: #D0E3D4;
-  --map-quad: #BAD6C2;
-  --map-park: #CBE0C4;
+  --map-land: #ECECEE;
+  --map-block: #DFDFE2;
+  --map-campus: #F2DBE1;
+  --map-quad: #E8C7CF;
+  --map-park: #D2E3CB;
   --map-water: #BAD4E3;
   --map-road: #FFFFFF;
-  --map-road-edge: #CDD5CA;
-  --map-bldg: #B3CBB9;
-  --map-label: #55655B;
+  --map-road-edge: #D4D4D8;
+  --map-bldg: #CDBCC1;
+  --map-label: #5C5C62;
   --shadow-1: 0 1px 2px rgb(21 33 27 / .06), 0 2px 10px rgb(21 33 27 / .05);
   --shadow-2: 0 4px 10px rgb(21 33 27 / .07), 0 18px 44px rgb(21 33 27 / .15);
   --backdrop: rgb(12 20 16 / .48);
@@ -49,37 +49,37 @@
 
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --bg: #0E1411;
-    --surface: #151D19;
-    --surface-2: #1C2621;
-    --surface-3: #27332D;
-    --ink: #E5ECE7;
-    --ink-2: #A9B8AF;
-    --ink-3: #87968D;
-    --line: #25302A;
-    --line-2: #35443B;
-    --quad: #52C08E;
-    --quad-hover: #67CE9E;
-    --quad-ink: #05140D;
-    --quad-soft: #17342A;
-    --quad-text: #74D3A6;
-    --signal: #FFCD4D;
-    --signal-ink: #231B00;
+    --bg: #121113;
+    --surface: #1A1A1D;
+    --surface-2: #232327;
+    --surface-3: #2E2E33;
+    --ink: #ECECEE;
+    --ink-2: #B2B2B8;
+    --ink-3: #8C8C93;
+    --line: #2B2B30;
+    --line-2: #3C3C42;
+    --quad: #E2586F;
+    --quad-hover: #EC6B80;
+    --quad-ink: #2A0409;
+    --quad-soft: #3A1620;
+    --quad-text: #F08497;
+    --signal: #E2586F;
+    --signal-ink: #2A0409;
     --good: #5DCB91;
     --warn: #F0B358;
     --bad: #FF8F86;
     --route2: #6F9EF2;
     --route7: #F28D59;
-    --map-land: #161F1B;
-    --map-block: #1D2823;
-    --map-campus: #1B3226;
-    --map-quad: #22412F;
+    --map-land: #1A1A1D;
+    --map-block: #232327;
+    --map-campus: #331820;
+    --map-quad: #442029;
     --map-park: #1C3222;
     --map-water: #163042;
-    --map-road: #2A3731;
-    --map-road-edge: #33433A;
-    --map-bldg: #2A4636;
-    --map-label: #9CADA2;
+    --map-road: #2E2E33;
+    --map-road-edge: #3A3A40;
+    --map-bldg: #4A2831;
+    --map-label: #A0A0A6;
     --shadow-1: 0 1px 2px rgb(0 0 0 / .4), 0 2px 10px rgb(0 0 0 / .25);
     --shadow-2: 0 4px 10px rgb(0 0 0 / .35), 0 18px 44px rgb(0 0 0 / .5);
     --backdrop: rgb(0 0 0 / .62);
@@ -87,37 +87,37 @@
   }
 }
 :root[data-theme="dark"] {
-  --bg: #0E1411;
-  --surface: #151D19;
-  --surface-2: #1C2621;
-  --surface-3: #27332D;
-  --ink: #E5ECE7;
-  --ink-2: #A9B8AF;
-  --ink-3: #87968D;
-  --line: #25302A;
-  --line-2: #35443B;
-  --quad: #52C08E;
-  --quad-hover: #67CE9E;
-  --quad-ink: #05140D;
-  --quad-soft: #17342A;
-  --quad-text: #74D3A6;
-  --signal: #FFCD4D;
-  --signal-ink: #231B00;
+  --bg: #121113;
+  --surface: #1A1A1D;
+  --surface-2: #232327;
+  --surface-3: #2E2E33;
+  --ink: #ECECEE;
+  --ink-2: #B2B2B8;
+  --ink-3: #8C8C93;
+  --line: #2B2B30;
+  --line-2: #3C3C42;
+  --quad: #E2586F;
+  --quad-hover: #EC6B80;
+  --quad-ink: #2A0409;
+  --quad-soft: #3A1620;
+  --quad-text: #F08497;
+  --signal: #E2586F;
+  --signal-ink: #2A0409;
   --good: #5DCB91;
   --warn: #F0B358;
   --bad: #FF8F86;
   --route2: #6F9EF2;
   --route7: #F28D59;
-  --map-land: #161F1B;
-  --map-block: #1D2823;
-  --map-campus: #1B3226;
-  --map-quad: #22412F;
+  --map-land: #1A1A1D;
+  --map-block: #232327;
+  --map-campus: #331820;
+  --map-quad: #442029;
   --map-park: #1C3222;
   --map-water: #163042;
-  --map-road: #2A3731;
-  --map-road-edge: #33433A;
-  --map-bldg: #2A4636;
-  --map-label: #9CADA2;
+  --map-road: #2E2E33;
+  --map-road-edge: #3A3A40;
+  --map-bldg: #4A2831;
+  --map-label: #A0A0A6;
   --shadow-1: 0 1px 2px rgb(0 0 0 / .4), 0 2px 10px rgb(0 0 0 / .25);
   --shadow-2: 0 4px 10px rgb(0 0 0 / .35), 0 18px 44px rgb(0 0 0 / .5);
   --backdrop: rgb(0 0 0 / .62);
@@ -928,7 +928,7 @@ p { margin: 0; }
 @container (max-width: 660px) { .detail-grid { grid-template-columns: minmax(0, 1fr); } }
 .detail-col { display: grid; gap: 26px; min-width: 0; }
 .dsec { display: grid; gap: 12px; min-width: 0; }
-.dsec-title { font-family: var(--font-mono); font-size: 0.6875rem; font-weight: 500; letter-spacing: .08em; text-transform: uppercase; color: var(--ink-3); }
+.dsec-title { font-family: var(--font-mono); font-size: 0.6875rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--quad); }
 .dsec p { max-width: 65ch; color: var(--ink-2); }
 .chips { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 6px; }
 .chip { display: inline-flex; align-items: center; height: 28px; padding: 0 10px; border-radius: 999px; background: var(--surface-2); font-size: 0.8125rem; font-weight: 550; color: var(--ink-2); }
@@ -1609,6 +1609,14 @@ dialog.dlg::backdrop { background: rgb(12 20 16 / .5); background: var(--backdro
 .footer-inner { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 6px 24px; padding-block: 20px calc(24px + env(safe-area-inset-bottom, 0px)); font-size: 0.8125rem; color: var(--ink-3); }
 .footer-inner b { color: var(--ink-2); font-weight: 700; }
 body[data-view="browse"] .footer { display: none; }
+body[data-view="saved"] .footer { display: none; }
+
+/* Save / saved button — matches the Contact / Book a tour button family */
+.save-btn .ic { fill: none; transition: fill .15s ease; }
+.save-btn.is-on { color: var(--quad); border-color: var(--quad); }
+.save-btn.is-on:hover:not(:disabled) { border-color: var(--quad); }
+.save-btn.is-on .ic { fill: var(--quad); stroke: var(--quad); }
+#view-saved .browse-list { margin-top: 4px; }
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { transition-duration: 0s !important; animation-duration: 0s !important; animation-iteration-count: 1 !important; }
