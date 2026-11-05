@@ -336,22 +336,17 @@ p { margin: 0; }
 }
 @keyframes spin { to { transform: rotate(360deg); } }
 
-/* ---------- header ---------- */
-.topbar {
-  position: sticky;
-  top: env(safe-area-inset-top, 0px);
-  z-index: 50;
-  background: var(--surface);
-  border-bottom: 1px solid var(--line);
-}
-.topbar-inner { height: var(--header-h); display: flex; align-items: center; gap: 12px; }
+/* ---------- shell: left sidebar + content ---------- */
+:root { --sidebar-w: 248px; }
+
+.app-shell { position: relative; }
+.app-content { min-width: 0; }
+
 .brand {
   display: inline-flex;
   align-items: center;
   gap: 10px;
-  margin-right: auto;
   padding: 4px;
-  margin-left: -4px;
   border: 0;
   border-radius: 10px;
   background: none;
@@ -368,26 +363,53 @@ p { margin: 0; }
   font-size: 1.2rem;
   letter-spacing: -0.02em;
 }
-.nav { display: flex; align-items: center; gap: 2px; }
+
+/* sidebar */
+.sidebar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  z-index: 50;
+  width: var(--sidebar-w);
+  background: var(--surface);
+  border-right: 1px solid var(--line);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+.sidebar-inner {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  min-height: 100%;
+  padding: max(20px, env(safe-area-inset-top, 0px)) 16px calc(20px + env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px));
+}
+.brand--side { align-self: flex-start; padding: 4px 6px; }
+
+.nav { display: flex; flex-direction: column; align-items: stretch; gap: 3px; }
 .nav-btn {
   display: inline-flex;
   align-items: center;
-  gap: 7px;
-  height: 38px;
+  gap: 11px;
+  width: 100%;
+  height: 42px;
   padding: 0 12px;
   border: 0;
   border-radius: 10px;
   background: transparent;
   color: var(--ink-2);
   font-weight: 600;
-  font-size: 0.875rem;
+  font-size: 0.9rem;
+  text-align: left;
 }
-.nav-btn .ic { width: 18px; height: 18px; }
+.nav-btn .ic { width: 19px; height: 19px; flex: none; }
+.nav-label { flex: 1; min-width: 0; }
 .nav-btn:hover { background: var(--surface-2); color: var(--ink); }
-.nav-btn[aria-current="page"] { background: var(--surface-2); color: var(--ink); }
+.nav-btn[aria-current="page"] { background: var(--surface-2); color: var(--ink); box-shadow: inset 2px 0 0 var(--quad); }
 .nav-count {
   min-width: 20px;
   height: 20px;
+  margin-left: auto;
   padding: 0 6px;
   border-radius: 999px;
   background: var(--signal);
@@ -398,10 +420,65 @@ p { margin: 0; }
   line-height: 20px;
   text-align: center;
 }
-@media (max-width: 620px) {
-  .nav-label { display: none; }
-  .nav-btn { padding: 0 10px; }
-  .brand-name { font-size: 1.05rem; }
+
+/* mobile top bar + drawer scrim (hidden on desktop) */
+.mobilebar { display: none; }
+.menu-toggle {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  flex: none;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--ink);
+}
+.menu-toggle:hover { background: var(--surface-2); }
+.menu-toggle .ic { width: 22px; height: 22px; }
+.sidebar-scrim { display: none; }
+
+@media (min-width: 901px) {
+  .app-content { margin-left: var(--sidebar-w); }
+}
+
+@media (max-width: 900px) {
+  .mobilebar {
+    position: sticky;
+    top: env(safe-area-inset-top, 0px);
+    z-index: 45;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    height: var(--header-h);
+    padding-left: max(10px, env(safe-area-inset-left, 0px));
+    padding-right: max(16px, env(safe-area-inset-right, 0px));
+    background: var(--surface);
+    border-bottom: 1px solid var(--line);
+  }
+  .sidebar {
+    width: min(84vw, 300px);
+    transform: translateX(-100%);
+    transition: transform .25s ease;
+    box-shadow: var(--shadow-2);
+    z-index: 80;
+  }
+  body.nav-open .sidebar { transform: none; }
+  .sidebar-scrim {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: 75;
+    background: var(--backdrop);
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity .25s ease, visibility .25s ease;
+  }
+  body.nav-open .sidebar-scrim { opacity: 1; visibility: visible; }
+}
+
+@media (max-width: 900px) and (prefers-reduced-motion: reduce) {
+  .sidebar, .sidebar-scrim { transition: none; }
 }
 
 /* ---------- quiz ---------- */

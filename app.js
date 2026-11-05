@@ -74,6 +74,7 @@
     send: '<path d="M22 2 11 13"/><path d="M22 2 15 22l-4-9-9-4z"/>',
     map: '<path d="M9 3.5 3 6v14.5l6-2.5 6 2.5 6-2.5V3.5L15 6z"/><path d="M9 3.5V18M15 6v14.5"/>',
     list: '<path d="M8 6h13M8 12h13M8 18h13M3.5 6h.01M3.5 12h.01M3.5 18h.01"/>',
+    menu: '<path d="M3 6h18M3 12h18M3 18h18"/>',
     copy: '<rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15H4.5A1.5 1.5 0 0 1 3 13.5v-9A1.5 1.5 0 0 1 4.5 3h9A1.5 1.5 0 0 1 15 4.5V5"/>',
     plus: '<path d="M12 5v14M5 12h14"/>',
     minus: '<path d="M5 12h14"/>',
@@ -1779,6 +1780,21 @@
     show(view);
   }
 
+  function openMenu() {
+    document.body.classList.add('nav-open');
+    const t = $('#menuToggle');
+    if (t) { t.setAttribute('aria-expanded', 'true'); t.setAttribute('aria-label', 'Close menu'); }
+  }
+  function closeMenu() {
+    if (!document.body.classList.contains('nav-open')) return;
+    document.body.classList.remove('nav-open');
+    const t = $('#menuToggle');
+    if (t) { t.setAttribute('aria-expanded', 'false'); t.setAttribute('aria-label', 'Open menu'); }
+  }
+  function toggleMenu() {
+    if (document.body.classList.contains('nav-open')) closeMenu(); else openMenu();
+  }
+
   function onClick(e) {
     if (e.target instanceof HTMLDialogElement && e.target.open) {
       const r = e.target.getBoundingClientRect();
@@ -1791,7 +1807,9 @@
     if (!t || t.disabled) return;
     const id = t.dataset.id;
     switch (t.dataset.action) {
-      case 'nav': go(t.dataset.view); break;
+      case 'nav': go(t.dataset.view); closeMenu(); break;
+      case 'menu-toggle': toggleMenu(); break;
+      case 'menu-close': closeMenu(); break;
       case 'save': toggleSave(id); break;
       case 'retake': state.step = 0; go('quiz'); showStep(0); break;
       case 'expand': toggleExpand(id); break;
@@ -1799,7 +1817,7 @@
       case 'open': closeHostDialog(t, false); openListingSmart(id); break;
       case 'contact': closeHostDialog(t, true); openContact(id); break;
       case 'tour': closeHostDialog(t, true); openTour(id); break;
-      case 'tours': closeHostDialog(t, true); openTours(); break;
+      case 'tours': closeHostDialog(t, true); closeMenu(); openTours(); break;
       case 'cancel-tour': cancelTour(t); break;
       case 'close': { const d = t.closest('dialog'); if (d) d.close(); break; }
       case 'photo': setPhoto(t); break;
@@ -1841,7 +1859,9 @@
     updateSavedNav();
     document.addEventListener('click', onClick);
     document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape' && $('#chat').classList.contains('is-open') && !document.querySelector('dialog[open]')) closeChat();
+      if (e.key !== 'Escape' || document.querySelector('dialog[open]')) return;
+      if (document.body.classList.contains('nav-open')) { closeMenu(); return; }
+      if ($('#chat').classList.contains('is-open')) closeChat();
     });
     if (dockQuery) {
       if (dockQuery.addEventListener) dockQuery.addEventListener('change', placeChat);
