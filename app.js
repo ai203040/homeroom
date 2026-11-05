@@ -1384,7 +1384,7 @@
              <span class="acct-meta"><b>${esc(firstName(u.name))}</b><span>${esc(u.email)}</span></span>
            </button>
            <button type="button" class="linkbtn acct-link" data-action="signout">Sign out</button>`
-        : `<button type="button" class="btn btn--secondary btn--block" data-action="auth-open" data-mode="signin">Sign in</button>
+        : `<button type="button" class="btn btn--secondary btn--block side-signin" data-action="auth-open" data-mode="signin">${icon('user')}<span class="acct-txt">Sign in</span></button>
            <button type="button" class="linkbtn acct-link" data-action="auth-open" data-mode="signup">Create an account</button>`;
     }
     if (mob) {
@@ -1935,6 +1935,16 @@
   function toggleMenu() {
     if (document.body.classList.contains('nav-open')) closeMenu(); else openMenu();
   }
+  function setCollapsed(on, persist) {
+    document.body.classList.toggle('nav-collapsed', on);
+    const b = $('.side-collapse');
+    if (b) {
+      b.setAttribute('aria-label', on ? 'Expand menu' : 'Collapse menu');
+      b.setAttribute('aria-expanded', String(!on));
+    }
+    if (persist !== false) store.set('navCollapsed', on);
+  }
+  function toggleCollapse() { setCollapsed(!document.body.classList.contains('nav-collapsed')); }
 
   function onClick(e) {
     if (e.target instanceof HTMLDialogElement && e.target.open) {
@@ -1953,6 +1963,7 @@
       case 'menu-close': closeMenu(); break;
       case 'auth-open': closeMenu(); openAuth(t.dataset.mode || 'signin'); break;
       case 'signout': signOut(); break;
+      case 'nav-collapse': toggleCollapse(); break;
       case 'save': toggleSave(id); break;
       case 'retake': state.step = 0; go('quiz'); showStep(0); break;
       case 'expand': toggleExpand(id); break;
@@ -2001,6 +2012,7 @@
     updateToursNav();
     updateSavedNav();
     renderAccount();
+    if (store.get('navCollapsed', false)) setCollapsed(true, false);
     document.addEventListener('click', onClick);
     document.addEventListener('keydown', (e) => {
       if (e.key !== 'Escape' || document.querySelector('dialog[open]')) return;
