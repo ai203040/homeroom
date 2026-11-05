@@ -481,6 +481,40 @@ p { margin: 0; }
   .sidebar, .sidebar-scrim { transition: none; }
 }
 
+/* account controls */
+.side-foot { margin-top: auto; display: flex; flex-direction: column; gap: 8px; padding-top: 14px; border-top: 1px solid var(--line); }
+.side-foot .acct-link { align-self: flex-start; padding: 2px 6px; font-size: 0.8125rem; }
+.acct-chip {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 8px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--surface);
+  color: var(--ink);
+  text-align: left;
+}
+.acct-chip:hover { background: var(--surface-2); }
+.acct-meta { display: grid; min-width: 0; }
+.acct-meta b { font-size: 0.875rem; font-weight: 700; }
+.acct-meta span { font-size: 0.72rem; color: var(--ink-3); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.avatar--sm { width: 34px; height: 34px; font-size: 0.8125rem; }
+button.avatar--sm { border: 0; padding: 0; }
+button.avatar--sm:hover { filter: brightness(0.96); }
+.mob-account { margin-left: auto; display: flex; align-items: center; }
+
+/* auth dialog */
+.auth-tabs { display: flex; width: 100%; }
+.auth-tabs button { flex: 1; height: 38px; }
+.field-hint { margin-top: 2px; }
+.acct-card { display: flex; align-items: center; gap: 14px; padding: 14px; border: 1px solid var(--line); border-radius: var(--r-md); background: var(--surface-2); }
+.acct-card-text { display: grid; min-width: 0; }
+.acct-card-text b { font-size: 1rem; font-weight: 700; }
+.acct-card-text span { font-size: 0.8125rem; color: var(--ink-3); overflow-wrap: anywhere; }
+.acct-hint { font-size: 0.875rem; color: var(--ink-2); line-height: 1.5; }
+
 /* ---------- quiz ---------- */
 .quiz-layout {
   display: grid;

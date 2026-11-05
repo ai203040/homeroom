@@ -222,6 +222,59 @@
   function validEmail(s) { return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(s); }
   function saveMe(me) { state.me = me; store.set('me', me); }
 
+  // ---------- accounts (optional, local to this browser) ----------
+  // Sign-in is never required; it just personalises and pre-fills forms.
+  // This is a demo: accounts live only in this browser's localStorage.
+  function scramble(s) {
+    // Light, non-reversible-ish digest so the raw password isn't sitting in
+    // storage as plain text. Not real security — this demo has no server.
+    let h = 2166136261;
+    const str = 'hr§' + String(s);
+    for (let i = 0; i < str.length; i++) { h ^= str.charCodeAt(i); h = Math.imul(h, 16777619); }
+    return (h >>> 0).toString(36);
+  }
+  function getAccounts() { const a = store.get('accounts', {}); return a && typeof a === 'object' ? a : {}; }
+  function setAccounts(a) { store.set('accounts', a); }
+  state.auth = null;
+  (function restoreSession() {
+    const email = store.get('session', null);
+    if (!email) return;
+    const acct = getAccounts()[String(email).toLowerCase()];
+    if (acct) state.auth = { name: acct.name, email: acct.email };
+  })();
+  function applyAuthToMe() {
+    if (!state.auth) return;
+    const cur = state.me || { name: '', email: '', phone: '' };
+    saveMe({ name: state.auth.name, email: state.auth.email, phone: cur.phone || '' });
+  }
+  function signUp(name, email, pass) {
+    const key = email.toLowerCase();
+    const accts = getAccounts();
+    if (accts[key]) return { error: 'An account with that email already exists. Try signing in instead.' };
+    accts[key] = { name, email, pass: scramble(pass), created: Date.now() };
+    setAccounts(accts);
+    state.auth = { name, email };
+    store.set('session', key);
+    applyAuthToMe();
+    return { ok: true };
+  }
+  function signIn(email, pass) {
+    const acct = getAccounts()[email.toLowerCase()];
+    if (!acct || acct.pass !== scramble(pass)) return { error: 'We couldn’t find an account with that email and password.' };
+    state.auth = { name: acct.name, email: acct.email };
+    store.set('session', email.toLowerCase());
+    applyAuthToMe();
+    return { ok: true };
+  }
+  function signOut() {
+    state.auth = null;
+    store.set('session', null);
+    renderAccount();
+    const d = $('#dlgAuth');
+    if (d && d.open) d.close();
+  }
+  if (state.auth) applyAuthToMe();
+
   // ---------- quiz ----------
   function radioStep(i, name, title, help, opts) {
     return `<fieldset class="q-step" data-step="${i}" hidden>
@@ -1319,6 +1372,94 @@
     $('#navToursCount').hidden = count === 0;
   }
 
+  // ---------- account UI ----------
+  function renderAccount() {
+    const side = $('#accountSide');
+    const mob = $('#accountMob');
+    const u = state.auth;
+    if (side) {
+      side.innerHTML = u
+        ? `<button type="button" class="acct-chip" data-action="auth-open" aria-label="Your account">
+             <span class="avatar avatar--sm" aria-hidden="true">${esc(initials(u.name))}</span>
+             <span class="acct-meta"><b>${esc(firstName(u.name))}</b><span>${esc(u.email)}</span></span>
+           </button>
+           <button type="button" class="linkbtn acct-link" data-action="signout">Sign out</button>`
+        : `<button type="button" class="btn btn--secondary btn--block" data-action="auth-open" data-mode="signin">Sign in</button>
+           <button type="button" class="linkbtn acct-link" data-action="auth-open" data-mode="signup">Create an account</button>`;
+    }
+    if (mob) {
+      mob.innerHTML = u
+        ? `<button type="button" class="avatar avatar--sm" data-action="auth-open" aria-label="Your account, ${esc(u.name)}">${esc(initials(u.name))}</button>`
+        : `<button type="button" class="iconbtn" data-action="auth-open" data-mode="signin" aria-label="Sign in or create an account">${icon('user')}</button>`;
+    }
+  }
+
+  function openAuth(mode) {
+    const d = $('#dlgAuth');
+    if (state.auth) {
+      const u = state.auth;
+      d.innerHTML = `<div class="dlg-shell">
+        <header class="dlg-head"><div><p class="eyebrow">Homeroom account</p><h2 class="dlg-title" id="dlgAuthTitle">Your account</h2></div><button type="button" class="iconbtn" data-action="close" aria-label="Close">${icon('x')}</button></header>
+        <div class="dlg-body stack">
+          <div class="acct-card"><span class="avatar" aria-hidden="true">${esc(initials(u.name))}</span><div class="acct-card-text"><b>${esc(u.name)}</b><span>${esc(u.email)}</span></div></div>
+          <p class="acct-hint">You’re signed in, so your name and email fill in automatically when you message a landlord or book a tour. Signing in is optional — everything on Homeroom works without it.</p>
+        </div>
+        <footer class="dlg-foot"><p class="demo-note">${icon('info')}Signed in on this browser.</p><div class="dlg-actions"><button type="button" class="btn btn--secondary" data-action="signout">Sign out</button></div></footer>
+      </div>`;
+      openDialog(d);
+      return;
+    }
+
+    const signup = mode === 'signup';
+    const me = state.me || { name: '', email: '', phone: '' };
+    d.innerHTML = `<form class="dlg-form" id="authForm" novalidate>
+      <header class="dlg-head"><div><p class="eyebrow">Homeroom account</p><h2 class="dlg-title" id="dlgAuthTitle">${signup ? 'Create your account' : 'Welcome back'}</h2><p class="dlg-sub">Optional — browse and get matched without one.</p></div><button type="button" class="iconbtn" data-action="close" aria-label="Close">${icon('x')}</button></header>
+      <div class="dlg-body stack">
+        <div class="seg auth-tabs" role="group" aria-label="Account">
+          <button type="button" data-action="auth-open" data-mode="signin" aria-pressed="${!signup}">Sign in</button>
+          <button type="button" data-action="auth-open" data-mode="signup" aria-pressed="${signup}">Sign up</button>
+        </div>
+        ${signup ? `<div class="field"><label for="auName">Your name</label><input class="input" id="auName" autocomplete="name" value="${esc(me.name)}" required></div>` : ''}
+        <div class="field"><label for="auEmail">Email</label><input class="input" id="auEmail" type="email" autocomplete="email" value="${esc(me.email)}" required></div>
+        <div class="field"><label for="auPass">Password</label><input class="input" id="auPass" type="password" autocomplete="${signup ? 'new-password' : 'current-password'}" required>${signup ? '<span class="opt-label field-hint">At least 6 characters.</span>' : ''}</div>
+        <p class="form-error" id="authErr" role="alert" hidden></p>
+      </div>
+      <footer class="dlg-foot"><p class="demo-note">${icon('info')}Demo: your account is saved only in this browser.</p><div class="dlg-actions"><button type="submit" class="btn btn--primary">${signup ? 'Create account' : 'Sign in'}</button></div></footer>
+    </form>`;
+    const form = $('#authForm', d);
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const nameEl = $('#auName', d);
+      const name = nameEl ? nameEl.value.trim() : '';
+      const email = $('#auEmail', d).value.trim();
+      const pass = $('#auPass', d).value;
+      const problems = [];
+      if (signup && name.length < 2) problems.push('add your name');
+      if (!validEmail(email)) problems.push('add a valid email address');
+      if (pass.length < 6) problems.push(signup ? 'choose a password of at least 6 characters' : 'enter your password');
+      if (nameEl) nameEl.setAttribute('aria-invalid', String(signup && name.length < 2));
+      $('#auEmail', d).setAttribute('aria-invalid', String(!validEmail(email)));
+      $('#auPass', d).setAttribute('aria-invalid', String(pass.length < 6));
+      const err = $('#authErr', d);
+      if (problems.length) {
+        err.textContent = 'To continue, ' + M.listJoin(problems) + '.';
+        err.hidden = false;
+        return;
+      }
+      const res = signup ? signUp(name, email, pass) : signIn(email, pass);
+      if (res.error) {
+        err.textContent = res.error;
+        err.hidden = false;
+        return;
+      }
+      renderAccount();
+      d.close();
+    });
+    openDialog(d);
+    const focusEl = signup ? $('#auName', d) : $('#auEmail', d);
+    if (focusEl) { try { focusEl.focus(); } catch (e) { /* focus not available */ } }
+  }
+
   // ---------- assistant ----------
   const chat = { turns: [], busy: false, ctl: null, mode: 'checking', sample: null, ready: null };
 
@@ -1810,6 +1951,8 @@
       case 'nav': go(t.dataset.view); closeMenu(); break;
       case 'menu-toggle': toggleMenu(); break;
       case 'menu-close': closeMenu(); break;
+      case 'auth-open': closeMenu(); openAuth(t.dataset.mode || 'signin'); break;
+      case 'signout': signOut(); break;
       case 'save': toggleSave(id); break;
       case 'retake': state.step = 0; go('quiz'); showStep(0); break;
       case 'expand': toggleExpand(id); break;
@@ -1857,6 +2000,7 @@
     buildChat();
     updateToursNav();
     updateSavedNav();
+    renderAccount();
     document.addEventListener('click', onClick);
     document.addEventListener('keydown', (e) => {
       if (e.key !== 'Escape' || document.querySelector('dialog[open]')) return;
