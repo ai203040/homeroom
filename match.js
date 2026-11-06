@@ -88,7 +88,7 @@
   }
 
   /*
-    a = { budget, bedrooms, baths, commute, amenities: [], lease }
+    a = { budgetMin, budgetMax, bedrooms, baths, commute, amenities: [], lease }
     keys = which parts to count (for the live preview while the quiz is in progress)
   */
   function score(l, a, keys) {
@@ -99,17 +99,22 @@
     const c = commute(l);
     const eff = effective(l);
 
-    // Budget
-    const diff = a.budget - eff;
-    if (diff >= 0) parts.budget = 30;
-    else {
-      const over = -diff / a.budget;
-      parts.budget = over <= 0.05 ? 22 : over <= 0.1 ? 14 : over <= 0.15 ? 8 : over <= 0.25 ? 3 : 0;
-    }
+    // Budget range: the effective cost should fall between min and max
+    const lo = a.budgetMin;
+    const hi = a.budgetMax;
     const utilNote = l.utilities.included ? '' : ', utilities counted';
-    if (diff >= 25) pros.push({ k: 'budget', w: 3 + Math.min(diff / 100, 2), text: money(roundTo(diff, 5)) + ' under your budget' + utilNote });
-    else if (diff >= 0) pros.push({ k: 'budget', w: 2.5, text: 'Right at your budget' + utilNote });
-    else cons.push({ k: 'budget', w: 3 + Math.min(-diff / 100, 3), text: money(roundTo(-diff, 5)) + ' over your budget' + utilNote });
+    if (eff > hi) {
+      const over = (eff - hi) / hi;
+      parts.budget = over <= 0.05 ? 22 : over <= 0.1 ? 14 : over <= 0.15 ? 8 : over <= 0.25 ? 3 : 0;
+      cons.push({ k: 'budget', w: 3 + Math.min((eff - hi) / 100, 3), text: money(roundTo(eff - hi, 5)) + ' over your max budget' + utilNote });
+    } else if (eff < lo) {
+      const under = (lo - eff) / lo;
+      parts.budget = under <= 0.15 ? 28 : under <= 0.3 ? 24 : 20;
+      pros.push({ k: 'budget', w: 2.6, text: money(roundTo(lo - eff, 5)) + ' below your price range' + utilNote });
+    } else {
+      parts.budget = 30;
+      pros.push({ k: 'budget', w: 2.6, text: 'Within your budget range' + utilNote });
+    }
 
     // Bedrooms (exact match scores highest; off by more loses more)
     const wantBd = Number(a.bedrooms) || 0;

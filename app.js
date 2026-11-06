@@ -117,7 +117,7 @@
     { key: 'lease', label: 'Lease' },
   ];
   const DEFAULTS = { bedrooms: '1', baths: '1', commute: 'walk', lease: 'academic' };
-  const BLANK = { budget: QZ.budget.start, bedrooms: null, baths: null, commute: null, amenities: [], lease: null };
+  const BLANK = { budgetMin: QZ.budget.startMin, budgetMax: QZ.budget.startMax, bedrooms: null, baths: null, commute: null, amenities: [], lease: null };
   const saved = store.get('answers', null);
   const state = {
     view: null,
@@ -136,10 +136,20 @@
   };
   if (!Array.isArray(state.answers.amenities)) state.answers.amenities = [];
 
+  function clampBudget(v, fallback) {
+    const b = QZ.budget;
+    let n = Math.round(Number(v));
+    if (!n) n = fallback;
+    return Math.min(Math.max(n, b.min), b.max);
+  }
   function answers() {
     const a = state.answers;
+    let lo = clampBudget(a.budgetMin, QZ.budget.startMin);
+    let hi = clampBudget(a.budgetMax, QZ.budget.startMax);
+    if (lo > hi) { const t = lo; lo = hi; hi = t; }
     return {
-      budget: Number(a.budget) || QZ.budget.start,
+      budgetMin: lo,
+      budgetMax: hi,
       bedrooms: a.bedrooms != null ? a.bedrooms : DEFAULTS.bedrooms,
       baths: a.baths != null ? a.baths : DEFAULTS.baths,
       commute: a.commute || DEFAULTS.commute,
@@ -310,11 +320,18 @@
     $('#quizSteps').innerHTML = STEPS.map((s, i) => `<li><button type="button" class="step-btn" data-step="${i}"><span class="n">${pad(i + 1)}<span class="n-check"></span></span>${s.label}</button></li>`).join('');
     let html = `<fieldset class="q-step" data-step="0">
       <legend class="q-title" tabindex="-1">What’s your monthly budget?</legend>
-      <p class="q-help">Per person, per month. We count estimated utilities toward it.</p>
-      <div class="budget-read"><output class="budget-out" id="budgetOut" for="budget">${money(state.answers.budget)}</output><span class="budget-unit">per month</span></div>
-      <label for="budget" class="sr-only">Monthly budget</label>
-      <input class="range" type="range" id="budget" name="budget" min="${b.min}" max="${b.max}" step="${b.step}" value="${state.answers.budget}" aria-describedby="budgetFit">
-      <div class="budget-scale" aria-hidden="true">${b.ticks.map((t) => `<span style="left:calc(13px + (100% - 26px) * ${((t - b.min) / (b.max - b.min)).toFixed(4)})">${money(t)}</span>`).join('')}</div>
+      <p class="q-help">Per person, per month. We count estimated utilities toward it. Type a minimum and maximum between ${money(b.min)} and ${money(b.max)}.</p>
+      <div class="budget-range">
+        <div class="budget-field">
+          <label for="budgetMin">Minimum</label>
+          <div class="money-input"><span class="money-sign" aria-hidden="true">$</span><input class="input" type="number" inputmode="numeric" id="budgetMin" name="budgetMin" min="${b.min}" max="${b.max}" step="${b.step}" value="${state.answers.budgetMin}" aria-describedby="budgetFit"></div>
+        </div>
+        <span class="budget-dash" aria-hidden="true">–</span>
+        <div class="budget-field">
+          <label for="budgetMax">Maximum</label>
+          <div class="money-input"><span class="money-sign" aria-hidden="true">$</span><input class="input" type="number" inputmode="numeric" id="budgetMax" name="budgetMax" min="${b.min}" max="${b.max}" step="${b.step}" value="${state.answers.budgetMax}" aria-describedby="budgetFit"></div>
+        </div>
+      </div>
       <p class="budget-fit" id="budgetFit"></p>
     </fieldset>`;
     html += sizeStep(1);
@@ -336,18 +353,16 @@
     const a = state.answers;
     ['bedrooms', 'baths', 'commute', 'lease'].forEach((k) => $$(`#quizBody input[name="${k}"]`).forEach((i) => { i.checked = i.value === a[k]; }));
     $$('#quizBody input[name="amenities"]').forEach((i) => { i.checked = a.amenities.includes(i.value); });
-    $('#budget').value = a.budget;
+    if ($('#budgetMin')) $('#budgetMin').value = a.budgetMin;
+    if ($('#budgetMax')) $('#budgetMax').value = a.budgetMax;
     syncOptClasses();
     updateBudget();
   }
   function updateBudget() {
-    const b = QZ.budget;
-    const v = Number(state.answers.budget);
-    const p = (v - b.min) / (b.max - b.min);
-    $('#budget').style.setProperty('--fill', `calc(13px + (100% - 26px) * ${p.toFixed(4)})`);
-    $('#budgetOut').textContent = money(v);
-    const fit = L.filter((l) => M.effective(l) <= v).length;
-    $('#budgetFit').innerHTML = `<b>${fit} of ${L.length}</b> places fit this budget once estimated utilities are added.`;
+    const a = answers();
+    const fit = L.filter((l) => { const e = M.effective(l); return e >= a.budgetMin && e <= a.budgetMax; }).length;
+    const el = $('#budgetFit');
+    if (el) el.innerHTML = `<b>${fit} of ${L.length}</b> place${fit === 1 ? '' : 's'} fall in ${money(a.budgetMin)}–${money(a.budgetMax)} once estimated utilities are added.`;
   }
 
   function stepFilled(key) {
@@ -423,14 +438,27 @@
     let autoTimer = 0;
     form.addEventListener('pointerdown', (e) => { if (e.target.closest('.opt, .num-opt')) lastPointer = Date.now(); });
     form.addEventListener('input', (e) => {
-      if (e.target.id !== 'budget') return;
-      state.answers.budget = Number(e.target.value);
+      if (e.target.id !== 'budgetMin' && e.target.id !== 'budgetMax') return;
+      // store the raw typed value; answers() clamps/orders it for scoring
+      state.answers[e.target.id] = e.target.value;
       updateBudget();
       persistAnswers();
       updateLive();
     });
     form.addEventListener('change', (e) => {
       const t = e.target;
+      if (t.id === 'budgetMin' || t.id === 'budgetMax') {
+        // on blur/enter, normalise both fields to the clamped, ordered values
+        const a = answers();
+        state.answers.budgetMin = a.budgetMin;
+        state.answers.budgetMax = a.budgetMax;
+        if ($('#budgetMin')) $('#budgetMin').value = a.budgetMin;
+        if ($('#budgetMax')) $('#budgetMax').value = a.budgetMax;
+        persistAnswers();
+        updateBudget();
+        updateLive();
+        return;
+      }
       if (t.name === 'bedrooms' || t.name === 'baths') {
         state.answers[t.name] = t.value;
         state.touched.add('size');
@@ -501,7 +529,7 @@
   function prefChips(a) {
     const am = !a.amenities.length ? 'Any amenities' : a.amenities.length <= 2 ? a.amenities.map((x) => M.AMENITY[x].label).join(', ') : a.amenities.length + ' amenities';
     return [
-      ['dollar', 'Up to ' + money(a.budget) + '/mo'],
+      ['dollar', money(a.budgetMin) + '–' + money(a.budgetMax) + '/mo'],
       ['bed', bedWantLabel(a.bedrooms)],
       ['bath', bathWantLabel(a.baths)],
       [MODE_ICON[a.commute], COMMUTE_NAME[a.commute]],
@@ -1645,7 +1673,7 @@
       '- General housing questions (leases, roommates, deposits, budgeting, moving) are welcome. Give practical advice for students.',
       '',
       state.quizDone ? 'The student’s quiz answers:' : 'The student has not taken the quiz yet; the page is using these sample answers:',
-      `- Budget: up to ${money(a.budget)} per month`,
+      `- Budget range: ${money(a.budgetMin)} to ${money(a.budgetMax)} per month`,
       `- Bedrooms wanted: ${bedWantLabel(a.bedrooms)}`,
       `- Bathrooms wanted: ${bathWantLabel(a.baths)}`,
       `- Main way to campus: ${COMMUTE_NAME[a.commute]}`,
@@ -1865,8 +1893,8 @@
     if (/cheap|afford|lowest|least expensive|budget|cost|price|how much|\brent\b|save money/.test(t)) {
       if (named.length) return named.map((l) => `${B(l)} is ${costTxt(l)}, so about ${money(M.effective(l))} a month all in.`).join('\n');
       const ls = pool.slice().sort((x, y) => M.effective(x) - M.effective(y)).slice(0, 3);
-      const fit = L.filter((l) => M.effective(l) <= a.budget).length;
-      return 'Lowest monthly cost, counting estimated utilities:\n' + bullets(ls, (l) => `about ${money(M.effective(l))}/mo (${costTxt(l)})`) + `\n\n${fit} of ${L.length} places fit a budget of ${money(a.budget)}.`;
+      const fit = L.filter((l) => { const e = M.effective(l); return e >= a.budgetMin && e <= a.budgetMax; }).length;
+      return 'Lowest monthly cost, counting estimated utilities:\n' + bullets(ls, (l) => `about ${money(M.effective(l))}/mo (${costTxt(l)})`) + `\n\n${fit} of ${L.length} places fall in your range of ${money(a.budgetMin)}–${money(a.budgetMax)}.`;
     }
 
     if (/utilit|electric|internet|wi-?fi|\bbills?\b/.test(t)) {

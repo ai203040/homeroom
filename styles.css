@@ -750,6 +750,19 @@ button.avatar--sm:hover { filter: brightness(0.96); }
 .num-opt:focus-within { outline: 2px solid var(--quad); outline-offset: 2px; }
 .num-opt:has(input:focus:not(:focus-visible)) { outline: none; }
 
+.budget-range { display: flex; align-items: flex-end; flex-wrap: wrap; gap: 12px 14px; }
+.budget-field { display: grid; gap: 6px; }
+.budget-field label { font-size: 0.8125rem; font-weight: 650; color: var(--ink-2); }
+.money-input { position: relative; display: inline-flex; align-items: center; }
+.money-sign { position: absolute; left: 13px; font-weight: 650; color: var(--ink-3); pointer-events: none; }
+.money-input .input { width: 150px; max-width: 42vw; padding-left: 26px; font-variant-numeric: tabular-nums; }
+.budget-dash { align-self: center; padding-bottom: 10px; color: var(--ink-3); font-weight: 650; }
+@media (max-width: 420px) {
+  .budget-range { gap: 10px; }
+  .money-input .input { width: 130px; }
+  .budget-dash { display: none; }
+}
+
 .budget-read { display: flex; align-items: baseline; gap: 10px; }
 .budget-out {
   font-family: var(--font-display);

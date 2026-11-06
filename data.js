@@ -17,7 +17,7 @@ window.HOMEROOM = {
   },
 
   quiz: {
-    budget: { min: 450, max: 1600, step: 25, start: 950, ticks: [450, 800, 1200, 1600] },
+    budget: { min: 450, max: 1600, step: 25, start: 950, startMin: 600, startMax: 1200, ticks: [450, 800, 1200, 1600] },
     bedrooms: [
       { value: '0', label: 'Studio' },
       { value: '1', label: '1' },
