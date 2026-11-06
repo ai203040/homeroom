@@ -446,20 +446,28 @@ p { margin: 0; }
   .sidebar { transition: width .2s ease; }
   .side-collapse { display: grid; }
 
+  /* collapsed: content keeps the slim gutter; the panel itself expands on hover */
   body.nav-collapsed { --sidebar-w: 76px; }
-  body.nav-collapsed .sidebar-inner { padding-left: 12px; padding-right: 12px; }
-  body.nav-collapsed .side-top { flex-direction: column; align-items: center; gap: 10px; }
-  body.nav-collapsed .brand--side { flex: none; padding: 4px; }
-  body.nav-collapsed .brand-name,
-  body.nav-collapsed .nav-label,
-  body.nav-collapsed .acct-txt,
-  body.nav-collapsed .acct-meta,
-  body.nav-collapsed .acct-link { display: none; }
-  body.nav-collapsed .nav-btn { position: relative; justify-content: center; padding: 0; gap: 0; }
-  body.nav-collapsed .side-signin { padding: 0; }
-  body.nav-collapsed .acct-chip { justify-content: center; padding: 8px; }
-  body.nav-collapsed .side-collapse .ic { transform: rotate(180deg); }
-  body.nav-collapsed .nav-count {
+  body.nav-collapsed .sidebar:hover,
+  body.nav-collapsed .sidebar:focus-within {
+    width: 248px;
+    z-index: 60;
+    box-shadow: var(--shadow-2);
+  }
+
+  /* the slim-rail look applies only while the panel is at rest (not hovered/focused) */
+  body.nav-collapsed .sidebar:not(:hover):not(:focus-within) .sidebar-inner { padding-left: 12px; padding-right: 12px; }
+  body.nav-collapsed .sidebar:not(:hover):not(:focus-within) .side-top { flex-direction: column; align-items: center; gap: 10px; }
+  body.nav-collapsed .sidebar:not(:hover):not(:focus-within) .brand--side { flex: none; padding: 4px; }
+  body.nav-collapsed .sidebar:not(:hover):not(:focus-within) .brand-name,
+  body.nav-collapsed .sidebar:not(:hover):not(:focus-within) .nav-label,
+  body.nav-collapsed .sidebar:not(:hover):not(:focus-within) .acct-txt,
+  body.nav-collapsed .sidebar:not(:hover):not(:focus-within) .acct-meta,
+  body.nav-collapsed .sidebar:not(:hover):not(:focus-within) .acct-link { display: none; }
+  body.nav-collapsed .sidebar:not(:hover):not(:focus-within) .nav-btn { position: relative; justify-content: center; padding: 0; gap: 0; }
+  body.nav-collapsed .sidebar:not(:hover):not(:focus-within) .side-signin { padding: 0; }
+  body.nav-collapsed .sidebar:not(:hover):not(:focus-within) .acct-chip { justify-content: center; padding: 8px; }
+  body.nav-collapsed .sidebar:not(:hover):not(:focus-within) .nav-count {
     position: absolute;
     top: 5px;
     right: 7px;
@@ -470,6 +478,7 @@ p { margin: 0; }
     font-size: 0;
     line-height: 0;
   }
+  body.nav-collapsed .side-collapse .ic { transform: rotate(180deg); }
 }
 
 @media (min-width: 901px) and (prefers-reduced-motion: reduce) {
