@@ -111,13 +111,13 @@
   const QZ = D.quiz;
   const STEPS = [
     { key: 'budget', label: 'Budget' },
-    { key: 'roommates', label: 'Roommates' },
+    { key: 'size', label: 'Size' },
     { key: 'commute', label: 'Commute' },
     { key: 'amenities', label: 'Amenities' },
     { key: 'lease', label: 'Lease' },
   ];
-  const DEFAULTS = { roommates: 'one', commute: 'walk', lease: 'academic' };
-  const BLANK = { budget: QZ.budget.start, roommates: null, commute: null, amenities: [], lease: null };
+  const DEFAULTS = { bedrooms: '1', baths: '1', commute: 'walk', lease: 'academic' };
+  const BLANK = { budget: QZ.budget.start, bedrooms: null, baths: null, commute: null, amenities: [], lease: null };
   const saved = store.get('answers', null);
   const state = {
     view: null,
@@ -128,7 +128,7 @@
     resultsCampus: 'all',
     expanded: new Set(),
     top: [],
-    browse: { campus: 'all', price: 'any', rooms: 'any', sort: 'match', mode: 'list' },
+    browse: { campus: 'all', price: 'any', beds: 'any', sort: 'match', mode: 'list' },
     tours: store.get('tours', []),
     saved: store.get('saved', []),
     messages: store.get('messages', []),
@@ -140,7 +140,8 @@
     const a = state.answers;
     return {
       budget: Number(a.budget) || QZ.budget.start,
-      roommates: a.roommates || DEFAULTS.roommates,
+      bedrooms: a.bedrooms != null ? a.bedrooms : DEFAULTS.bedrooms,
+      baths: a.baths != null ? a.baths : DEFAULTS.baths,
       commute: a.commute || DEFAULTS.commute,
       amenities: a.amenities || [],
       lease: a.lease || DEFAULTS.lease,
@@ -191,13 +192,16 @@
   // ---------- small helpers ----------
   const COMMUTE_NAME = { walk: 'Walking', bike: 'Bike or scooter', transit: 'Bus', car: 'Car' };
   const MODE_ICON = { walk: 'walk', bike: 'bike', transit: 'bus', car: 'car' };
-  const ROOM_CHIP = { solo: 'No roommates', one: '1 roommate', few: '2–3 roommates', many: '4+ roommates' };
-
   function campusTag(l) { return `<span class="tag tag--${l.campus}">${l.campus === 'on' ? 'On campus' : 'Off campus'}</span>`; }
-  function roommateText(l) {
-    const r = l.roommates;
-    return r === 0 ? 'No roommates' : r === 1 ? '1 roommate' : r >= 4 ? r + ' housemates' : r + ' roommates';
-  }
+  function bedShort(n) { return n === 0 ? 'Studio' : n + ' bd'; }
+  function bathShort(n) { return n === 0 ? 'Shared bath' : n + ' ba'; }
+  function bedLabel(n) { return n === 0 ? 'Studio' : n === 1 ? '1 bedroom' : n + ' bedrooms'; }
+  function bathLabel(n) { return n === 0 ? 'Shared bathroom' : n === 1 ? '1 bath' : n + ' baths'; }
+  // Short "Studio · 1 ba" / "3 bd · 1.5 ba" summary used on cards
+  function sizeText(l) { return l.bedrooms === 0 ? 'Studio · ' + bathShort(l.baths).toLowerCase() : bedShort(l.bedrooms) + ' · ' + bathShort(l.baths); }
+  // Labels for the student's chosen answers
+  function bedWantLabel(v) { const n = Number(v); return n === 0 ? 'Studio' : n === 1 ? '1 bedroom' : n + ' bedrooms'; }
+  function bathWantLabel(v) { const n = Number(v); return n === 0 ? 'Shared bath' : n === 1 ? '1 bath' : n + ' baths'; }
   function initials(name) { return name.split(/\s+/).filter(Boolean).slice(0, 2).map((w) => w[0]).join('').toUpperCase(); }
   function firstName(name) { return name.split(' ')[0]; }
   function lowerFirst(s) { return s.charAt(0).toLowerCase() + s.slice(1); }
@@ -276,6 +280,23 @@
   if (state.auth) applyAuthToMe();
 
   // ---------- quiz ----------
+  function numCard(name, o) {
+    return `<label class="num-opt" for="q-${name}-${o.value}"><input type="radio" id="q-${name}-${o.value}" name="${name}" value="${o.value}"><span>${esc(o.label)}</span></label>`;
+  }
+  function sizeStep(i) {
+    return `<fieldset class="q-step" data-step="${i}" hidden>
+      <legend class="q-title" tabindex="-1">How much space do you need?</legend>
+      <p class="q-help">Pick the number of bedrooms and bathrooms you’re looking for. “Studio” means no separate bedroom.</p>
+      <div class="size-group" role="radiogroup" aria-label="Bedrooms">
+        <span class="size-label">${icon('bed')}Bedrooms</span>
+        <div class="num-opts">${QZ.bedrooms.map((o) => numCard('bedrooms', o)).join('')}</div>
+      </div>
+      <div class="size-group" role="radiogroup" aria-label="Bathrooms">
+        <span class="size-label">${icon('bath')}Bathrooms</span>
+        <div class="num-opts">${QZ.baths.map((o) => numCard('baths', o)).join('')}</div>
+      </div>
+    </fieldset>`;
+  }
   function radioStep(i, name, title, help, opts) {
     return `<fieldset class="q-step" data-step="${i}" hidden>
       <legend class="q-title" tabindex="-1">${esc(title)}</legend>
@@ -296,7 +317,7 @@
       <div class="budget-scale" aria-hidden="true">${b.ticks.map((t) => `<span style="left:calc(13px + (100% - 26px) * ${((t - b.min) / (b.max - b.min)).toFixed(4)})">${money(t)}</span>`).join('')}</div>
       <p class="budget-fit" id="budgetFit"></p>
     </fieldset>`;
-    html += radioStep(1, 'roommates', 'How many roommates are you open to?', 'Count the people you would share a room or a unit with.', QZ.roommates);
+    html += sizeStep(1);
     html += radioStep(2, 'commute', 'How will you get to campus?', 'We time every place to the Main Quad using your main way of getting around.', QZ.commute);
     html += `<fieldset class="q-step" data-step="3" hidden>
       <legend class="q-title" tabindex="-1">Which amenities matter to you?</legend>
@@ -309,11 +330,11 @@
   }
 
   function syncOptClasses() {
-    $$('#quizBody .opt, #quizBody .chip-opt').forEach((lab) => { lab.classList.toggle('is-checked', $('input', lab).checked); });
+    $$('#quizBody .opt, #quizBody .chip-opt, #quizBody .num-opt').forEach((lab) => { lab.classList.toggle('is-checked', $('input', lab).checked); });
   }
   function syncQuizInputs() {
     const a = state.answers;
-    ['roommates', 'commute', 'lease'].forEach((k) => $$(`#quizBody input[name="${k}"]`).forEach((i) => { i.checked = i.value === a[k]; }));
+    ['bedrooms', 'baths', 'commute', 'lease'].forEach((k) => $$(`#quizBody input[name="${k}"]`).forEach((i) => { i.checked = i.value === a[k]; }));
     $$('#quizBody input[name="amenities"]').forEach((i) => { i.checked = a.amenities.includes(i.value); });
     $('#budget').value = a.budget;
     syncOptClasses();
@@ -329,16 +350,18 @@
     $('#budgetFit').innerHTML = `<b>${fit} of ${L.length}</b> places fit this budget once estimated utilities are added.`;
   }
 
-  function isAnswered(k) {
-    const key = STEPS[k].key;
+  function stepFilled(key) {
     if (key === 'budget') return true;
     if (key === 'amenities') return state.touched.has('amenities');
+    if (key === 'size') return state.answers.bedrooms != null && state.answers.baths != null;
     return !!state.answers[key];
   }
+  function isRequired(key) { return key === 'size' || key === 'commute' || key === 'lease'; }
+  function isAnswered(k) { return stepFilled(STEPS[k].key); }
   function canReach(k) {
     for (let j = 0; j < k; j++) {
       const key = STEPS[j].key;
-      if (key !== 'amenities' && key !== 'budget' && !state.answers[key]) return false;
+      if (isRequired(key) && !stepFilled(key)) return false;
     }
     return true;
   }
@@ -366,11 +389,11 @@
     const last = state.step === STEPS.length - 1;
     const label = last ? 'See my matches' : key === 'amenities' && !state.answers.amenities.length ? 'Skip' : 'Next';
     btn.innerHTML = `${label}${icon('arrowRight')}`;
-    btn.disabled = (key === 'roommates' || key === 'commute' || key === 'lease') && !state.answers[key];
+    btn.disabled = isRequired(key) && !stepFilled(key);
   }
   function nextStep() {
     const key = STEPS[state.step].key;
-    if ((key === 'roommates' || key === 'commute' || key === 'lease') && !state.answers[key]) return;
+    if (isRequired(key) && !stepFilled(key)) return;
     state.touched.add(key);
     if (state.step < STEPS.length - 1) {
       showStep(state.step + 1, true);
@@ -398,7 +421,7 @@
     const form = $('#quizForm');
     let lastPointer = 0;
     let autoTimer = 0;
-    form.addEventListener('pointerdown', (e) => { if (e.target.closest('.opt')) lastPointer = Date.now(); });
+    form.addEventListener('pointerdown', (e) => { if (e.target.closest('.opt, .num-opt')) lastPointer = Date.now(); });
     form.addEventListener('input', (e) => {
       if (e.target.id !== 'budget') return;
       state.answers.budget = Number(e.target.value);
@@ -408,7 +431,19 @@
     });
     form.addEventListener('change', (e) => {
       const t = e.target;
-      if (t.name === 'roommates' || t.name === 'commute' || t.name === 'lease') {
+      if (t.name === 'bedrooms' || t.name === 'baths') {
+        state.answers[t.name] = t.value;
+        state.touched.add('size');
+        syncOptClasses();
+        persistAnswers();
+        updateNext();
+        updateLive();
+        // only auto-advance once both bedrooms and baths are chosen
+        if (Date.now() - lastPointer < 900 && state.step < STEPS.length - 1 && stepFilled('size')) {
+          clearTimeout(autoTimer);
+          autoTimer = setTimeout(nextStep, reduceMotion ? 0 : 320);
+        }
+      } else if (t.name === 'commute' || t.name === 'lease') {
         state.answers[t.name] = t.value;
         state.touched.add(t.name);
         syncOptClasses();
@@ -447,7 +482,10 @@
     $('#liveMap').innerHTML = `<svg viewBox="0 0 1200 800" role="img" aria-label="Map of Temple showing which places fit your answers so far" style="--road-labels:0;--ts:1.9;--routes:.55"><use href="#hr-map"/>${quadMark(1.9)}${L.map((l) => `<g class="dotg" data-id="${l.id}" transform="translate(${l.pos[0]} ${l.pos[1]})"><circle class="dot-ring" r="21"/><circle class="dot--${l.campus}" r="14"/></g>`).join('')}</svg>`;
   }
   function updateLive() {
-    const keys = STEPS.map((s) => s.key).filter((k) => state.touched.has(k));
+    const keys = [];
+    STEPS.map((s) => s.key).filter((k) => state.touched.has(k)).forEach((k) => {
+      if (k === 'size') keys.push('bedrooms', 'baths'); else keys.push(k);
+    });
     const ranked = M.rank(L, answers(), { keys });
     const strong = ranked.filter((x) => x.s.total >= 72);
     const ids = new Set(strong.map((x) => x.l.id));
@@ -464,7 +502,8 @@
     const am = !a.amenities.length ? 'Any amenities' : a.amenities.length <= 2 ? a.amenities.map((x) => M.AMENITY[x].label).join(', ') : a.amenities.length + ' amenities';
     return [
       ['dollar', 'Up to ' + money(a.budget) + '/mo'],
-      ['users', ROOM_CHIP[a.roommates]],
+      ['bed', bedWantLabel(a.bedrooms)],
+      ['bath', bathWantLabel(a.baths)],
       [MODE_ICON[a.commute], COMMUTE_NAME[a.commute]],
       ['check', am],
       ['calendar', M.LEASE_NAME[a.lease]],
@@ -498,7 +537,7 @@
             <span class="price">${money(l.rent)}<small>/mo</small></span>
             <span class="fact">${l.utilities.included ? 'Utilities included' : '+ ' + money(l.utilities.estimate) + ' utilities'}</span>
             <span class="fact">${esc(l.layout.summary)}</span>
-            <span class="fact">${roommateText(l)}</span>
+            <span class="fact">${esc(sizeText(l))}</span>
           </div>
           <span class="sign">${icon(cl.icon)}${esc(cl.short)}</span>
           <ul class="why">${s.pros.slice(0, 3).map((p) => `<li class="ok">${icon('check')}<span>${esc(p.text)}</span></li>`).join('')}${s.cons.slice(0, 2).map((p) => `<li class="meh">${icon('alert')}<span>${esc(p.text)}</span></li>`).join('')}</ul>
@@ -658,8 +697,8 @@
               <dt>Type</dt><dd>${esc(l.kind)}, ${l.campus === 'on' ? 'on campus' : 'off campus'}</dd>
               <dt>Layout</dt><dd>${esc(l.layout.summary)} · ${l.layout.sqft.toLocaleString('en-US')} sq ft</dd>
               <dt>Your space</dt><dd>${esc(l.layout.space)}</dd>
-              <dt>Bathroom</dt><dd>${esc(l.layout.bath)}</dd>
-              <dt>Roommates</dt><dd>${roommateText(l)}</dd>
+              <dt>Bedrooms</dt><dd>${esc(bedLabel(l.bedrooms))}</dd>
+              <dt>Bathrooms</dt><dd>${esc(bathLabel(l.baths))} · ${esc(l.layout.bath)}</dd>
               <dt>Furnished</dt><dd>${l.furnished ? 'Yes' : 'No'}</dd>
               <dt>Lease type</dt><dd>${esc(l.leaseType)}</dd>
               <dt>Lease terms</dt><dd>${leaseRows}</dd>
@@ -772,7 +811,7 @@
         <div class="card-price"><span class="price">${money(l.rent)}<small>/mo</small></span><span class="card-util">${l.utilities.included ? 'Utilities included' : '+ ' + money(l.utilities.estimate) + ' utilities'}</span></div>
         <h3 class="card-title"><button type="button" data-action="open" data-id="${l.id}">${esc(l.name)}</button></h3>
         <p class="card-sub">${esc(l.kind)} · ${esc(l.hood)}</p>
-        <div class="card-facts"><span>${icon('bed')}${esc(l.layout.summary)}</span><span>${icon('users')}${roommateText(l)}</span></div>
+        <div class="card-facts"><span>${icon('bed')}${esc(bedShort(l.bedrooms))}</span><span>${icon('bath')}${esc(bathShort(l.baths))}</span></div>
         <span class="sign">${icon(cl.icon)}${esc(cl.short)}</span>
         <div class="card-actions">
           ${saveBtnHTML(l)}
@@ -790,9 +829,10 @@
     let items = L.map((l) => ({ l, s: M.score(l, a) }));
     if (f.campus !== 'all') items = items.filter((x) => x.l.campus === f.campus);
     if (f.price !== 'any') items = items.filter((x) => x.l.rent <= Number(f.price));
-    if (f.rooms !== 'any') {
-      const r = M.ROOM_RANGE[f.rooms];
-      items = items.filter((x) => x.l.roommates >= r[0] && x.l.roommates <= r[1]);
+    if (f.beds !== 'any') {
+      if (f.beds === 'studio') items = items.filter((x) => x.l.bedrooms === 0);
+      else if (f.beds === '4') items = items.filter((x) => x.l.bedrooms >= 4);
+      else items = items.filter((x) => x.l.bedrooms === Number(f.beds));
     }
     if (f.sort === 'price') items.sort((x, y) => x.l.rent - y.l.rent);
     else if (f.sort === 'distance') items.sort((x, y) => x.s.commute.walk - y.s.commute.walk);
@@ -805,7 +845,7 @@
     $$('#browseMode button').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.val === f.mode)));
     $('#browseLayout').classList.toggle('is-map', f.mode === 'map');
     $('#fPrice').value = f.price;
-    $('#fRooms').value = f.rooms;
+    $('#fBeds').value = f.beds;
     $('#fSort').value = f.sort;
     $('#fSort option[value="match"]').textContent = state.quizDone ? 'Best match' : 'Recommended';
     browseMap.setPins(items);
@@ -821,7 +861,7 @@
 
   function bindBrowse() {
     $('#fPrice').addEventListener('change', (e) => { state.browse.price = e.target.value; renderBrowse(); });
-    $('#fRooms').addEventListener('change', (e) => { state.browse.rooms = e.target.value; renderBrowse(); });
+    $('#fBeds').addEventListener('change', (e) => { state.browse.beds = e.target.value; renderBrowse(); });
     $('#fSort').addEventListener('change', (e) => { state.browse.sort = e.target.value; renderBrowse(); });
     const list = $('#browseList');
     const over = (e) => {
@@ -1587,7 +1627,7 @@
     const leases = Object.keys(l.leases).map((k) => `${M.LEASE_NAME[k]} (${l.leases[k]})`).join('; ');
     const bus = l.transit ? `Route ${l.transit.route} bus from ${l.transit.stop}, about ${l.transit.total} min door to door` : l.campus === 'on' ? 'on campus, no bus needed' : 'no bus line that saves time';
     const other = (l.costs.other || []).map((o) => `, ${o.label} ${money(o.amount)}`).join('');
-    return `- ${l.name} | ${l.campus === 'on' ? 'on campus' : 'off campus'}, ${l.kind}, ${l.hood}, ${l.address} | rent ${money(l.rent)}/mo (${l.billing}); utilities ${l.utilities.included ? 'included' : 'about ' + money(l.utilities.estimate) + '/mo extra'} (${l.utilities.note.replace(/\.$/, '')}); effective cost ${money(M.effective(l))}/mo | ${l.layout.summary}: ${l.layout.space}, ${l.layout.bath}, ${l.layout.sqft} sq ft, ${roommateText(l).toLowerCase()}, ${l.furnished ? 'furnished' : 'unfurnished'} | ${l.leaseType}; options: ${leases}; move-in from ${l.available} | to the Main Quad: walk ${c.walk} min, bike ${c.bike} min, drive ${c.drive} min, ${bus} | parking: ${l.parking.note} | amenities: ${am} | pets: ${l.rules.pets} | smoking: ${l.rules.smoking} | guests: ${l.rules.guests} | quiet hours: ${l.rules.quiet} | subletting: ${l.rules.sublet} | move-in costs: ${l.costs.depositLabel} ${money(l.costs.deposit)}, application fee ${l.costs.appFee ? money(l.costs.appFee) : 'none'}${other} | contact: ${l.landlord.name}, ${l.landlord.role}, ${l.landlord.company}, ${lowerFirst(l.landlord.response)}, hours ${l.landlord.hours} | ${l.description}`;
+    return `- ${l.name} | ${l.campus === 'on' ? 'on campus' : 'off campus'}, ${l.kind}, ${l.hood}, ${l.address} | rent ${money(l.rent)}/mo (${l.billing}); utilities ${l.utilities.included ? 'included' : 'about ' + money(l.utilities.estimate) + '/mo extra'} (${l.utilities.note.replace(/\.$/, '')}); effective cost ${money(M.effective(l))}/mo | ${l.layout.summary}: ${l.layout.space}, ${l.layout.bath}, ${l.layout.sqft} sq ft, ${bedLabel(l.bedrooms).toLowerCase()}, ${bathLabel(l.baths).toLowerCase()}, ${l.furnished ? 'furnished' : 'unfurnished'} | ${l.leaseType}; options: ${leases}; move-in from ${l.available} | to the Main Quad: walk ${c.walk} min, bike ${c.bike} min, drive ${c.drive} min, ${bus} | parking: ${l.parking.note} | amenities: ${am} | pets: ${l.rules.pets} | smoking: ${l.rules.smoking} | guests: ${l.rules.guests} | quiet hours: ${l.rules.quiet} | subletting: ${l.rules.sublet} | move-in costs: ${l.costs.depositLabel} ${money(l.costs.deposit)}, application fee ${l.costs.appFee ? money(l.costs.appFee) : 'none'}${other} | contact: ${l.landlord.name}, ${l.landlord.role}, ${l.landlord.company}, ${lowerFirst(l.landlord.response)}, hours ${l.landlord.hours} | ${l.description}`;
   }
 
   function aiContext() {
@@ -1606,7 +1646,8 @@
       '',
       state.quizDone ? 'The student’s quiz answers:' : 'The student has not taken the quiz yet; the page is using these sample answers:',
       `- Budget: up to ${money(a.budget)} per month`,
-      `- Roommates: ${M.ROOM_WANT[a.roommates]}`,
+      `- Bedrooms wanted: ${bedWantLabel(a.bedrooms)}`,
+      `- Bathrooms wanted: ${bathWantLabel(a.baths)}`,
       `- Main way to campus: ${COMMUTE_NAME[a.commute]}`,
       `- Amenities wanted: ${a.amenities.length ? a.amenities.map((x) => M.AMENITY[x].label).join(', ') : 'none picked'}`,
       `- Lease length: ${M.LEASE_NAME[a.lease]}`,
@@ -1786,7 +1827,7 @@
       const [x, y] = pair;
       const line = (l) => {
         const c = M.commute(l);
-        return `- ${B(l)}: ${costTxt(l)}, ${l.layout.summary.toLowerCase()} with ${roommateText(l).toLowerCase()}, ${c.walk} min walk to the Quad, ${Object.keys(l.leases).map((k) => M.LEASE_SHORT[k]).join(' or ')} lease. ${M.score(l, a).total}% match.`;
+        return `- ${B(l)}: ${costTxt(l)}, ${l.layout.summary.toLowerCase()} (${sizeText(l).toLowerCase()}), ${c.walk} min walk to the Quad, ${Object.keys(l.leases).map((k) => M.LEASE_SHORT[k]).join(' or ')} lease. ${M.score(l, a).total}% match.`;
       };
       const cheaper = M.effective(x) <= M.effective(y) ? x : y;
       const closer = M.commute(x).walk <= M.commute(y).walk ? x : y;
@@ -1863,9 +1904,9 @@
       return `One semester: ${sem.map((l) => `${B(l)} (${l.leases.semester})`).join(', ') || 'none'}.\n\nMonth-to-month: ${flex.map((l) => `${B(l)} (${l.leases.flex})`).join(', ') || 'none'}.\n\nMost off-campus places use 12-month leases that start August 1.`;
     }
 
-    if (/roommate|alone|single|studio|own place|privacy|by myself/.test(t)) {
-      const solo = pool.filter((l) => l.roommates === 0);
-      return 'Places without roommates:\n' + bullets(solo, (l) => `${l.layout.summary.toLowerCase()}, ${costTxt(l)}`);
+    if (/studio|alone|single|own place|privacy|by myself|no bedroom/.test(t)) {
+      const solo = pool.filter((l) => l.bedrooms === 0);
+      return 'Studios and single rooms (no separate bedroom):\n' + bullets(solo, (l) => `${l.layout.summary.toLowerCase()}, ${costTxt(l)}`);
     }
 
     if (/quiet|noise|noisy|loud|part(y|ies)/.test(t)) {
@@ -1983,7 +2024,7 @@
       case 'results-campus': state.resultsCampus = t.dataset.val; renderResults(); break;
       case 'browse-campus': state.browse.campus = t.dataset.val; renderBrowse(); break;
       case 'browse-mode': state.browse.mode = t.dataset.val; renderBrowse(); break;
-      case 'reset-filters': state.browse = Object.assign(state.browse, { campus: 'all', price: 'any', rooms: 'any' }); renderBrowse(); break;
+      case 'reset-filters': state.browse = Object.assign(state.browse, { campus: 'all', price: 'any', beds: 'any' }); renderBrowse(); break;
       default: break;
     }
   }

@@ -1,6 +1,6 @@
 /*
   Homeroom matching logic. Pure functions, no DOM.
-  Score = budget 30 + roommates 20 + commute 20 + amenities 20 + lease 10 = 100.
+  Score = budget 30 + bedrooms 10 + baths 10 + commute 20 + amenities 20 + lease 10 = 100.
 */
 (function (root) {
   'use strict';
@@ -8,9 +8,7 @@
 
   // 0.0018 miles per map unit, times 1.25 for street grids instead of straight lines
   const MILES_PER_UNIT = 0.00225;
-  const MAX = { budget: 30, roommates: 20, commute: 20, amenities: 20, lease: 10 };
-  const ROOM_RANGE = { solo: [0, 0], one: [1, 1], few: [2, 3], many: [4, 99] };
-  const ROOM_WANT = { solo: 'no roommates', one: '1 roommate', few: '2–3 roommates', many: '4 or more' };
+  const MAX = { budget: 30, bedrooms: 10, baths: 10, commute: 20, amenities: 20, lease: 10 };
   const LEASE_SHORT = { semester: 'one-semester', academic: 'academic-year', year: '12-month', flex: 'month-to-month' };
   const LEASE_NAME = { semester: 'One semester', academic: 'Academic year', year: '12 months', flex: 'Month-to-month' };
   const LEASE_COMPAT = {
@@ -29,6 +27,10 @@
   function roundTo(n, step) {
     return Math.round(n / step) * step;
   }
+  function cap(s) { return s.charAt(0).toUpperCase() + s.slice(1); }
+  function bedWord(n) { return n === 0 ? 'a studio' : n === 1 ? '1 bedroom' : n + ' bedrooms'; }
+  function bedWant(n) { return n === 0 ? 'a studio' : n === 1 ? '1 bedroom' : n + ' bedrooms'; }
+  function bathWord(n) { return n === 0 ? 'a shared bathroom' : n === 1 ? '1 bathroom' : n + ' bathrooms'; }
 
   function commute(l) {
     const q = D.campus.quad;
@@ -86,7 +88,7 @@
   }
 
   /*
-    a = { budget, roommates, commute, amenities: [], lease }
+    a = { budget, bedrooms, baths, commute, amenities: [], lease }
     keys = which parts to count (for the live preview while the quiz is in progress)
   */
   function score(l, a, keys) {
@@ -109,17 +111,26 @@
     else if (diff >= 0) pros.push({ k: 'budget', w: 2.5, text: 'Right at your budget' + utilNote });
     else cons.push({ k: 'budget', w: 3 + Math.min(-diff / 100, 3), text: money(roundTo(-diff, 5)) + ' over your budget' + utilNote });
 
-    // Roommates
-    const range = ROOM_RANGE[a.roommates] || ROOM_RANGE.one;
-    const r = l.roommates;
-    const d = r < range[0] ? range[0] - r : r > range[1] ? r - range[1] : 0;
-    parts.roommates = d === 0 ? 20 : d === 1 ? 10 : d === 2 ? 4 : 0;
-    if (d === 0) {
-      const t = r === 0 ? 'Your own space, no roommates' : r === 1 ? '1 roommate, as you wanted' : r >= 4 ? r + ' housemates, as you wanted' : r + ' roommates, as you wanted';
-      pros.push({ k: 'roommates', w: 2.6, text: t });
+    // Bedrooms (exact match scores highest; off by more loses more)
+    const wantBd = Number(a.bedrooms) || 0;
+    const bd = l.bedrooms;
+    const dBd = Math.abs(bd - wantBd);
+    parts.bedrooms = dBd === 0 ? 10 : dBd === 1 ? 6 : dBd === 2 ? 3 : 0;
+    if (dBd === 0) {
+      pros.push({ k: 'bedrooms', w: 2.4, text: cap(bedWord(bd)) + ', exactly what you wanted' });
     } else {
-      const t = r === 0 ? 'No roommates (you wanted ' + ROOM_WANT[a.roommates] + ')' : (r === 1 ? '1 roommate' : r + ' roommates') + ' (you wanted ' + ROOM_WANT[a.roommates] + ')';
-      cons.push({ k: 'roommates', w: 1.5 + d, text: t });
+      cons.push({ k: 'bedrooms', w: 1.4 + dBd, text: cap(bedWord(bd)) + ' (you wanted ' + bedWant(wantBd) + ')' });
+    }
+
+    // Baths (exact match scores highest; half-baths count)
+    const wantBa = Number(a.baths) || 0;
+    const ba = l.baths;
+    const dBa = Math.abs(ba - wantBa);
+    parts.baths = dBa === 0 ? 10 : dBa <= 0.5 ? 8 : dBa <= 1 ? 6 : dBa <= 2 ? 3 : 0;
+    if (dBa === 0) {
+      pros.push({ k: 'baths', w: 1.6, text: cap(bathWord(ba)) + ', just as you picked' });
+    } else if (dBa > 1) {
+      cons.push({ k: 'baths', w: 1.2 + dBa / 2, text: cap(bathWord(ba)) + ' (you wanted ' + bathWord(wantBa) + ')' });
     }
 
     // Commute
@@ -207,7 +218,8 @@
   }
 
   root.HR_MATCH = {
-    MAX, ROOM_RANGE, ROOM_WANT, LEASE_SHORT, LEASE_NAME, AMENITY,
+    MAX, LEASE_SHORT, LEASE_NAME, AMENITY,
     money, commute, effective, amenitySet, leaseKeys, parkingText, commuteLabel, listJoin, score, rank,
+    bedWord, bathWord,
   };
 })(typeof window !== 'undefined' ? window : globalThis);

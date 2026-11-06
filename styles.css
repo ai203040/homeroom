@@ -721,6 +721,35 @@ button.avatar--sm:hover { filter: brightness(0.96); }
 .chip-opt:focus-within { outline: 2px solid var(--quad); outline-offset: 2px; }
 .chip-opt:has(input:focus:not(:focus-visible)) { outline: none; }
 
+/* bedrooms & baths number pickers */
+.size-group { margin-bottom: 22px; }
+.size-group:last-child { margin-bottom: 0; }
+.size-label { display: inline-flex; align-items: center; gap: 8px; margin-bottom: 10px; font-size: 0.8125rem; font-weight: 650; color: var(--ink-2); }
+.size-label .ic { width: 18px; height: 18px; color: var(--ink-3); }
+.num-opts { display: flex; flex-wrap: wrap; gap: 8px; }
+.num-opt {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 48px;
+  height: 46px;
+  padding: 0 12px;
+  border: 1px solid var(--line-2);
+  border-radius: 12px;
+  background: var(--surface);
+  font-weight: 650;
+  font-size: 0.95rem;
+  cursor: pointer;
+  user-select: none;
+  transition: background-color .15s, border-color .15s, color .15s;
+}
+.num-opt input { position: absolute; opacity: 0; pointer-events: none; }
+.num-opt:hover { border-color: var(--ink-3); }
+.num-opt.is-checked { background: var(--quad); border-color: var(--quad); color: var(--quad-ink); }
+.num-opt:focus-within { outline: 2px solid var(--quad); outline-offset: 2px; }
+.num-opt:has(input:focus:not(:focus-visible)) { outline: none; }
+
 .budget-read { display: flex; align-items: baseline; gap: 10px; }
 .budget-out {
   font-family: var(--font-display);
